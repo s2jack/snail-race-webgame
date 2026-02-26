@@ -1,0 +1,4 @@
+html,body,#root{height:100%;}
+body{font-family:system-ui,Segoe UI,Roboto,Arial;margin:0;padding:16px}
+.app-root{max-width:1100px;margin:0 auto}
+.game-area{display:flex;gap:16px}

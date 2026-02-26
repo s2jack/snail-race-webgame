@@ -1,0 +1,9 @@
+export const SNAIL_COLORS = ['red', 'blue', 'green', 'yellow', 'purple']
+export const CRAZY_SNAIL_COLORS = ['black', 'white']
+export const TRACK_LENGTH = 16
+export const FINISH_LINE = 17
+export const MAX_PLAYERS = 8
+export const MIN_PLAYERS = 2
+export const STARTING_COINS = 3
+export const LEG_BET_VALUES = [5, 3, 2]
+export const RACE_BET_PAYOUTS = [8, 5, 3, 2, 1]
