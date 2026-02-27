@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useGameContext } from '../../context/GameContext'
 
 // ── Shared warm palette ──────────────────────────────────────────────────────
@@ -58,7 +58,59 @@ const placeLabel = (i) => {
 export function Scoreboard() {
   const { state, dispatch } = useGameContext()
 
+  // ── Leg-end countdown (10 → 0) before showing the summary modal ────────────
+  // null  = modal ready to show
+  // 1-10  = counting down, modal is blocked
+  const [countdown, setCountdown] = useState(null)
+  const prevPhaseRef = useRef(state.phase)
+
+  // Detect transition INTO leg_scoring → start the countdown
+  useEffect(() => {
+    if (state.phase === 'leg_scoring' && prevPhaseRef.current !== 'leg_scoring') {
+      setCountdown(10)
+    }
+    prevPhaseRef.current = state.phase
+  }, [state.phase])
+
+  // Tick the countdown down every second; null it out when done
+  useEffect(() => {
+    if (countdown === null || countdown <= 0) {
+      if (countdown === 0) setCountdown(null)
+      return
+    }
+    const timer = setTimeout(() => setCountdown(c => c - 1), 1000)
+    return () => clearTimeout(timer)
+  }, [countdown])
+
   // ── LEG SUMMARY ────────────────────────────────────────────────────────────
+  // While counting down, show a blocking overlay — nobody can act
+  if (state.phase === 'leg_scoring' && countdown !== null) {
+    return (
+      <div style={{ ...overlay, flexDirection: 'column', gap: 0 }}>
+        {/* big countdown number — key forces remount so animation replays each tick */}
+        <div
+          key={countdown}
+          style={{
+            width: 160, height: 160,
+            borderRadius: '50%',
+            background: `linear-gradient(135deg, ${C.gold}, ${C.goldDark})`,
+            border: `6px solid ${C.goldLight}`,
+            boxShadow: '0 0 60px rgba(185,138,73,0.6)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 80, fontWeight: 900, color: '#fff',
+            lineHeight: 1,
+            animation: 'countdownPulse 0.35s ease-out',
+          }}
+        >
+          {countdown}
+        </div>
+        <div style={{ marginTop: 24, fontSize: 16, fontWeight: 700, color: '#fff8ee', opacity: 0.85, letterSpacing: '1px', textTransform: 'uppercase' }}>
+          Leg ending…
+        </div>
+      </div>
+    )
+  }
+
   if (state.phase === 'leg_scoring' && state.legSummary) {
     const { placements, payouts } = state.legSummary
     return (
