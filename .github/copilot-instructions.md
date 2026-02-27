@@ -224,7 +224,39 @@ All UI must use the warm parchment aesthetic described below. Never use plain wh
 
 This project uses **inline React styles** exclusively — Tailwind CSS is not installed. Always use the palette tokens above as literal hex values in `style={{}}` props. Reuse the shared `C` / `SNAIL_HEX` constant objects that already exist inside several component files, or define a local constants object at the top of the file following the same pattern.
 
-## 💬 Communication Style
+## � Changelog & Commit Workflow
+
+A `CHANGELOG.md` file lives at the project root and is the canonical record of every change made to the project.
+
+### Rules for maintaining CHANGELOG.md
+
+1. **After every change you make**, append a bullet point under `## [Unreleased]` at the top of the file describing what was changed and why (one bullet per logical change, categorised under `### UI / <area>`, `### Game Logic`, `### Tests`, etc.).
+2. **Never delete or overwrite** existing entries — only prepend new ones or promote `[Unreleased]` to a versioned block.
+3. **When the user asks for a commit message**, look at all `## [Unreleased]` entries since the last versioned block and compose a concise conventional commit message (or set of messages) covering those changes. Do not invent changes — only reference what is documented.
+4. **When a commit is confirmed**, rename the `## [Unreleased]` block to `## [x.y.z] — <short-hash> — YYYY-MM-DD` and start a fresh `## [Unreleased]` block at the top.
+5. Version bumping follows **semver**:
+   - `patch` — bug fixes and style-only tweaks
+   - `minor` — new UI sections, new game features, or non-breaking refactors
+   - `major` — breaking changes to game state shape or rules
+
+### Changelog entry format
+
+```md
+## [Unreleased] — YYYY-MM-DD
+
+### UI / ComponentName
+- What changed and what problem it solves
+
+### Game Logic
+- What changed and what rule it enforces
+
+### Tests
+- What was added or updated
+```
+
+---
+
+## �💬 Communication Style
 
 - When suggesting architectural decisions, briefly explain the tradeoff.
 - When the game design document and a user request conflict, flag it and defer to `GAME_DESIGN.md` unless the user explicitly overrides it.

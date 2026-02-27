@@ -36,6 +36,10 @@ export default function App() {
               <BettingPanel />
             </div>
             <div className="section-divider" />
+            <div style={{ flexShrink: 0, minWidth: 180 }}>
+              <SpectatorTilePanel />
+            </div>
+            <div className="section-divider" />
             <div style={{ flexShrink: 0 }}>
               <TurnOrder />
             </div>
@@ -63,6 +67,120 @@ export default function App() {
 
 const SNAIL_HEX = { red: '#e53935', blue: '#1e88e5', green: '#43a047', yellow: '#fdd835', purple: '#8e24aa', black: '#222', white: '#eee' }
 const CRAZY = ['black', 'white']
+
+function SpectatorTilePanel() {
+  const { state, dispatch } = useGameContext()
+  const [spaceInput, setSpaceInput] = React.useState('')
+  const [side, setSide] = React.useState('boost')
+
+  const currentPlayer = state.players && state.players[state.currentPlayerIndex]
+  if (!currentPlayer) return null
+
+  const totalUsedCount = (state.usedDice || []).length
+  const canPlace = state.phase === 'playing' && totalUsedCount < 5
+  const tile = currentPlayer.spectatorTile
+
+  function placeOrMove() {
+    const pos = parseInt(spaceInput, 10)
+    if (Number.isNaN(pos) || !canPlace) return
+    const move = tile?.onBoard && tile.position !== pos
+    dispatch({ type: 'PLACE_SPECTATOR', playerId: currentPlayer.id, spaceNumber: pos, side, move })
+    setSpaceInput('')
+  }
+
+  function flipSide() {
+    if (!canPlace || !tile?.onBoard) return
+    dispatch({ type: 'PLACE_SPECTATOR', playerId: currentPlayer.id, spaceNumber: tile.position, side, move: false })
+  }
+
+  const inputSt = {
+    padding: '5px 8px',
+    border: `1px solid ${canPlace ? '#b98a49' : '#ddd'}`,
+    borderRadius: 5,
+    fontSize: 12,
+    background: canPlace ? '#fff' : '#f5f0e8',
+    color: '#5a3e1b',
+    outline: 'none',
+  }
+
+  return (
+    <div style={{ minWidth: 180 }}>
+      <p className="game-card-title" style={{ margin: '0 0 8px 0', display: 'flex', alignItems: 'center', gap: 4 }}>
+        🪨 Spectator Tile
+      </p>
+
+      {/* Status */}
+      <div style={{ marginBottom: 8, fontSize: 11, color: '#7a5a2a' }}>
+        {tile?.onBoard
+          ? <span style={{ padding: '2px 8px', borderRadius: 20, background: tile.side === 'boost' ? '#d4f0d0' : '#f9d8d8', border: `1px solid ${tile.side === 'boost' ? '#7bc97a' : '#e08080'}`, fontWeight: 700 }}>
+              {tile.side === 'boost' ? '🚀 Boost' : '🪤 Trap'} @ #{tile.position}
+            </span>
+          : <span style={{ fontStyle: 'italic', color: '#9a7a4a' }}>Not placed</span>
+        }
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {/* Space number input */}
+        <div>
+          <label style={{ display: 'block', fontSize: 10, fontWeight: 700, color: '#7a5a2a', marginBottom: 3 }}>Space #</label>
+          <input
+            type="number" min="1" max="16" placeholder="1–16"
+            value={spaceInput}
+            onChange={e => setSpaceInput(e.target.value)}
+            style={{ ...inputSt, width: '100%', boxSizing: 'border-box' }}
+            disabled={!canPlace}
+          />
+        </div>
+
+        {/* Boost / Trap select */}
+        <div>
+          <label style={{ display: 'block', fontSize: 10, fontWeight: 700, color: '#7a5a2a', marginBottom: 3 }}>Type</label>
+          <select
+            value={side}
+            onChange={e => setSide(e.target.value)}
+            style={{ ...inputSt, width: '100%', boxSizing: 'border-box' }}
+            disabled={!canPlace}
+          >
+            <option value="boost">🚀 Boost (+1)</option>
+            <option value="trap">🪤 Trap (−1)</option>
+          </select>
+        </div>
+
+        {/* Place / Move button */}
+        <button
+          onClick={placeOrMove}
+          disabled={!canPlace}
+          style={{
+            padding: '7px 10px', fontSize: 11, fontWeight: 700,
+            background: canPlace ? '#b98a49' : '#d0bfa0',
+            color: '#fff',
+            border: `2px solid ${canPlace ? '#7a5a2a' : '#bfae8a'}`,
+            borderRadius: 6,
+            cursor: canPlace ? 'pointer' : 'not-allowed',
+            width: '100%',
+          }}
+        >{tile?.onBoard ? 'Move Tile' : 'Place Tile'}</button>
+
+        {/* Flip side button — only when tile is on board */}
+        {tile?.onBoard && (
+          <button
+            onClick={flipSide}
+            disabled={!canPlace}
+            style={{
+              padding: '7px 10px', fontSize: 11, fontWeight: 700,
+              background: canPlace ? '#f0e0c0' : '#e8dcc8',
+              color: canPlace ? '#5a3e1b' : '#bfae8a',
+              border: `2px solid ${canPlace ? '#b98a49' : '#d0bfa0'}`,
+              borderRadius: 6,
+              cursor: canPlace ? 'pointer' : 'not-allowed',
+              width: '100%',
+            }}
+          >Flip Side</button>
+        )}
+      </div>
+    </div>
+  )
+}
 
 function SnailStandings() {
   const { state } = useGameContext()
@@ -136,9 +254,10 @@ function TurnOrder() {
           padding: '5px 10px', marginBottom: 8,
           background: 'linear-gradient(135deg, #56b243, #3d8a30)',
           borderRadius: 6, border: '2px solid #3d8a30',
+          maxWidth: 150, overflow: 'hidden',
         }}>
-          <span style={{ fontSize: 10, fontWeight: 800, color: 'rgba(255,255,255,0.8)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Now:</span>
-          <span style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>{currentPlayer.name}</span>
+          <span style={{ fontSize: 10, fontWeight: 800, color: 'rgba(255,255,255,0.8)', textTransform: 'uppercase', letterSpacing: '0.5px', flexShrink: 0 }}>Now:</span>
+          <span style={{ fontSize: 13, fontWeight: 800, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{currentPlayer.name}</span>
         </div>
       )}
 
@@ -153,6 +272,7 @@ function TurnOrder() {
               background: isCurrent ? '#fdf3e0' : '#fff8ee',
               border: `1px solid ${isCurrent ? '#b98a49' : '#e8d9bc'}`,
               borderRadius: 6,
+              maxWidth: 150, overflow: 'hidden',
             }}>
               <span style={{
                 width: 18, height: 18, borderRadius: '50%',
@@ -165,6 +285,7 @@ function TurnOrder() {
                 flex: 1, fontSize: 12,
                 fontWeight: isCurrent ? 800 : 600,
                 color: isCurrent ? '#5a3e1b' : '#9a7a4a',
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
               }}>{p.name}</span>
               <span style={{ fontSize: 11, color: '#b98a49', fontWeight: 700 }}>🪙{p.coins ?? 0}</span>
             </div>

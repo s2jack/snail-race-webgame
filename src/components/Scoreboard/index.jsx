@@ -58,7 +58,7 @@ const placeLabel = (i) => {
 export function Scoreboard() {
   const { state, dispatch } = useGameContext()
 
-  // ── Leg-end countdown (10 → 0) before showing the summary modal ────────────
+  // ── Leg-end countdown (5 → 0) before showing the summary modal ────────────
   // null  = modal ready to show
   // 1-10  = counting down, modal is blocked
   const [countdown, setCountdown] = useState(null)
@@ -67,7 +67,7 @@ export function Scoreboard() {
   // Detect transition INTO leg_scoring → start the countdown
   useEffect(() => {
     if (state.phase === 'leg_scoring' && prevPhaseRef.current !== 'leg_scoring') {
-      setCountdown(10)
+      setCountdown(5)
     }
     prevPhaseRef.current = state.phase
   }, [state.phase])
