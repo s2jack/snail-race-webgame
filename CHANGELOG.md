@@ -9,6 +9,17 @@ When no version tag exists yet, changes are listed under **Unreleased**.
 ## [Unreleased] — 2026-02-27
 
 ### UI / Board
+- Removed hover background effects from boosted and trapped board spaces; spaces now show a static colour with no pointer interaction
+- Removed unused `bgHover` variable from `renderSpace`
+- Added `.board-space--boost` and `.board-space--trap` CSS classes with `!important` overrides so the `.board-space:hover` rule cannot change the background of spectator tile spaces
+- Board component applies these classes conditionally based on tile side
+
+### UI / SpectatorTilePanel (App.jsx)
+- Merged "Move Tile" and "Flip Side" into a single **Update Tile** button backed by `applyTile()`
+- `applyTile()` resolves place / move / flip by checking whether a new space is entered and whether the tile is already on the board; no separate `flipSide()` function needed
+- Button label is "Place Tile" when not yet placed, "Update Tile" when already on the board
+
+### UI / Board
 - Board space divs now inherit the spectator tile colour as their full background and border (`#d4f0d0` / green for Boost, `#f9d8d8` / red for Trap) instead of only showing a coloured label
 - Removed the pill background from the owner-name text inside spectator tile spaces — label is now plain coloured text aligned centrally
 - Fixed hover effect on spectator tile spaces: Boost darkens to `#b8e4b3`, Trap to `#f0b5b5`, neutral to `#f5e8cc`; added `transition: background 0.15s`

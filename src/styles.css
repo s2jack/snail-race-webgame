@@ -192,6 +192,15 @@ body {
   box-shadow: 0 3px 10px rgba(185, 138, 73, 0.25) !important;
   background: #fffbf0 !important;
 }
+/* Spectator tile spaces keep their own colour on hover */
+.board-space.board-space--boost:hover {
+  background: #d4f0d0 !important;
+  border-color: #7bc97a !important;
+}
+.board-space.board-space--trap:hover {
+  background: #f9d8d8 !important;
+  border-color: #e08080 !important;
+}
 
 /* ─── Leg bet card lift ───────────────────────────────────────────────── */
 .leg-bet-card {

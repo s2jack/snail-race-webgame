@@ -80,17 +80,15 @@ function SpectatorTilePanel() {
   const canPlace = state.phase === 'playing' && totalUsedCount < 5
   const tile = currentPlayer.spectatorTile
 
-  function placeOrMove() {
-    const pos = parseInt(spaceInput, 10)
-    if (Number.isNaN(pos) || !canPlace) return
-    const move = tile?.onBoard && tile.position !== pos
+  // Single action: place fresh, or move to a new space, or flip side — all in one.
+  // If tile is on board and no new space is entered, keeps current position (flip/re-apply).
+  function applyTile() {
+    if (!canPlace) return
+    const pos = spaceInput ? parseInt(spaceInput, 10) : tile?.position
+    if (!pos || Number.isNaN(pos)) return
+    const move = !!(tile?.onBoard && tile.position !== pos)
     dispatch({ type: 'PLACE_SPECTATOR', playerId: currentPlayer.id, spaceNumber: pos, side, move })
     setSpaceInput('')
-  }
-
-  function flipSide() {
-    if (!canPlace || !tile?.onBoard) return
-    dispatch({ type: 'PLACE_SPECTATOR', playerId: currentPlayer.id, spaceNumber: tile.position, side, move: false })
   }
 
   const inputSt = {
@@ -146,9 +144,9 @@ function SpectatorTilePanel() {
           </select>
         </div>
 
-        {/* Place / Move button */}
+        {/* Single action button: Place / Move / Flip all in one */}
         <button
-          onClick={placeOrMove}
+          onClick={applyTile}
           disabled={!canPlace}
           style={{
             padding: '7px 10px', fontSize: 11, fontWeight: 700,
@@ -159,24 +157,7 @@ function SpectatorTilePanel() {
             cursor: canPlace ? 'pointer' : 'not-allowed',
             width: '100%',
           }}
-        >{tile?.onBoard ? 'Move Tile' : 'Place Tile'}</button>
-
-        {/* Flip side button — only when tile is on board */}
-        {tile?.onBoard && (
-          <button
-            onClick={flipSide}
-            disabled={!canPlace}
-            style={{
-              padding: '7px 10px', fontSize: 11, fontWeight: 700,
-              background: canPlace ? '#f0e0c0' : '#e8dcc8',
-              color: canPlace ? '#5a3e1b' : '#bfae8a',
-              border: `2px solid ${canPlace ? '#b98a49' : '#d0bfa0'}`,
-              borderRadius: 6,
-              cursor: canPlace ? 'pointer' : 'not-allowed',
-              width: '100%',
-            }}
-          >Flip Side</button>
-        )}
+        >{tile?.onBoard ? 'Update Tile' : 'Place Tile'}</button>
       </div>
     </div>
   )

@@ -28,15 +28,12 @@ export function Board() {
     const isBoost = space.spectatorTile?.side === 'boost'
     const isTrap  = space.spectatorTile?.side === 'trap'
     const bgNormal = isBoost ? '#d4f0d0' : isTrap ? '#f9d8d8' : '#fffdf7'
-    const bgHover  = isBoost ? '#b8e4b3' : isTrap ? '#f0b5b5' : '#f5e8cc'
     const border   = isBoost ? '2px solid #7bc97a' : isTrap ? '2px solid #e08080' : '2px solid #c9aa7a'
     return (
       <div
         key={space.spaceNumber}
-        className="board-space"
-        style={{ padding: '12px 10px', border, borderRadius: 6, minWidth: 0, background: bgNormal, transition: 'background 0.15s' }}
-        onMouseEnter={e => { e.currentTarget.style.background = bgHover }}
-        onMouseLeave={e => { e.currentTarget.style.background = bgNormal }}
+        className={`board-space${isBoost ? ' board-space--boost' : isTrap ? ' board-space--trap' : ''}`}
+        style={{ padding: '12px 10px', border, borderRadius: 6, minWidth: 0, background: bgNormal }}
       >
         <div style={{ fontSize: 11, fontWeight: 700, color: '#9a7a4a' }}>#{space.spaceNumber}</div>
         <div style={{ minHeight: 72, display: 'flex', flexDirection: 'column-reverse', gap: 4, marginTop: 6, alignItems: 'center' }}>
