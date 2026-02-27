@@ -232,9 +232,11 @@ A `CHANGELOG.md` file lives at the project root and is the canonical record of e
 
 1. **After every change you make**, append a bullet point under `## [Unreleased]` at the top of the file describing what was changed and why (one bullet per logical change, categorised under `### UI / <area>`, `### Game Logic`, `### Tests`, etc.).
 2. **Never delete or overwrite** existing entries — only prepend new ones or promote `[Unreleased]` to a versioned block.
-3. **When the user asks for a commit message**, look at all `## [Unreleased]` entries since the last versioned block and compose a concise conventional commit message (or set of messages) covering those changes. Do not invent changes — only reference what is documented.
-4. **When a commit is confirmed**, rename the `## [Unreleased]` block to `## [x.y.z] — <short-hash> — YYYY-MM-DD` and start a fresh `## [Unreleased]` block at the top.
-5. Version bumping follows **semver**:
+3. **When the user asks for a commit message**, do ALL of the following in one step:
+   a. Look at all `## [Unreleased]` entries since the last versioned block.
+   b. Compose a concise conventional commit message (or set of messages) covering those changes. Do not invent changes — only reference what is documented.
+   c. **Immediately update `CHANGELOG.md`**: rename the `## [Unreleased]` block to `## [x.y.z] — YYYY-MM-DD` (use today's date; the short hash will be filled in after the actual commit) and insert a fresh empty `## [Unreleased] — YYYY-MM-DD` block at the top. Do this in the same response — do not wait for the user to confirm.
+4. Version bumping follows **semver**:
    - `patch` — bug fixes and style-only tweaks
    - `minor` — new UI sections, new game features, or non-breaking refactors
    - `major` — breaking changes to game state shape or rules

@@ -67,11 +67,6 @@ export function BettingPanel() {
     dispatch({ type: 'PLACE_RACE_BET', playerId: currentPlayer.id, color, betType: type })
   }
 
-  const colorDot = (color) => {
-    const map = { red: '#e53935', blue: '#1e88e5', green: '#43a047', yellow: '#fdd835', purple: '#8e24aa', black: '#222', white: '#fff' }
-    return map[color] || color
-  }
-
   const hasAnyRaceBet = currentPlayer && (currentPlayer.raceBetCardsInHand || []).length > 0
   const raceBetColors = new Set(currentPlayer ? (currentPlayer.raceBetCardsInHand || []) : [])
 
@@ -89,39 +84,65 @@ export function BettingPanel() {
 • You may place one leg bet per turn. Each snail's stack refills at the start of every new Leg.`} />
       </div>
 
-      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'flex-start' }}>
         {Object.entries(state.legBetStacks || {}).map(([color, stack]) => {
           const topValue = stack[0] ? stack[0].value : null
-          const isWhite = color === 'white'
-          const hex = colorDot(color)
           const canBet = isActive && !!topValue
+          const stackLen = stack.length
+          // Each coin image is ~52 px wide; stack coins offset 8 px downward per layer.
+          const COIN_W = 52
+          const COIN_OFFSET = 8
+          // Container height holds the tallest possible stack (4 tiles) so layout is stable.
+          const CONTAINER_H = COIN_W + 3 * COIN_OFFSET  // 76 px
+
           return (
             <div
               key={color}
               onClick={() => canBet && placeLeg(color)}
               title={canBet ? `Leg bet on ${color} (${topValue} pts)` : topValue ? 'Not your turn' : 'Stack empty'}
               style={{
-                width: 52, height: 52,
-                borderRadius: '50%',
-                background: topValue ? hex : '#d0bfa0',
-                border: isWhite ? '3px solid #ccc' : '3px solid rgba(0,0,0,0.2)',
-                boxShadow: canBet
-                  ? `0 3px 10px rgba(0,0,0,0.25), inset 0 -3px 6px rgba(0,0,0,0.15)`
-                  : '0 1px 4px rgba(0,0,0,0.1)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                position: 'relative',
+                width: COIN_W,
+                height: CONTAINER_H,
                 cursor: canBet ? 'pointer' : 'default',
-                opacity: topValue ? 1 : 0.45,
-                transition: 'transform 0.1s, box-shadow 0.1s',
-                userSelect: 'none', flexShrink: 0,
+                opacity: topValue ? 1 : 0.38,
+                transition: 'transform 0.1s',
+                userSelect: 'none',
+                flexShrink: 0,
               }}
-              onMouseEnter={e => { if (canBet) e.currentTarget.style.transform = 'scale(1.1)' }}
+              onMouseEnter={e => { if (canBet) e.currentTarget.style.transform = 'scale(1.08)' }}
               onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)' }}
             >
-              <span style={{
-                fontSize: 18, fontWeight: 900, lineHeight: 1,
-                color: (isWhite || color === 'yellow') ? '#5a3e1b' : '#fff',
-                textShadow: '0 1px 2px rgba(0,0,0,0.2)',
-              }}>{topValue ?? '—'}</span>
+              {stackLen === 0 ? (
+                /* Empty slot — dashed ring as placeholder */
+                <div style={{
+                  width: COIN_W, height: COIN_W,
+                  borderRadius: '50%',
+                  border: '2px dashed #c9aa7a',
+                  boxSizing: 'border-box',
+                  position: 'absolute', top: 0,
+                }} />
+              ) : (
+                /* Render coins from bottom → top so the top tile (index 0) paints last and sits visually on top */
+                [...stack].reverse().map((tile, i) => {
+                  const stackIdx = stackLen - 1 - i  // original position in stack array
+                  return (
+                    <img
+                      key={stackIdx}
+                      src={`/colored_coins/${color}-coin-${tile.value}.png`}
+                      alt={`${color} ${tile.value}`}
+                      style={{
+                        position: 'absolute',
+                        top: stackIdx * COIN_OFFSET,
+                        left: 0,
+                        width: COIN_W,
+                        pointerEvents: 'none',
+                        display: 'block',
+                      }}
+                    />
+                  )
+                })
+              )}
             </div>
           )
         })}
