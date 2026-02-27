@@ -1,8 +1,8 @@
 import { useReducer, createContext, useContext } from 'react'
 import { SNAIL_COLORS, CRAZY_SNAIL_COLORS, STARTING_COINS, TRACK_LENGTH, MIN_PLAYERS, FINISH_LINE } from '../game/constants'
 import { createDicePool, drawDie } from '../game/dice'
-import { moveSnail } from '../game/movement'
-import { scoreLeg } from '../game/scoring'
+import { moveSnail, resolveCrazySnailId } from '../game/movement'
+import { scoreLeg, scoreRace } from '../game/scoring'
 import { canPlaceLegBet, canPlaceRaceBet, canPlaceSpectator } from '../game/validation'
 
 // initialize empty track 1..TRACK_LENGTH
@@ -108,17 +108,28 @@ function reducer(state, action) {
       // apply used dice update
       const usedDice = (state.usedDice || []).concat(die)
 
-      // move snail according to die (die includes a face `value` set when drawn)
-      const snailId = die.type === 'color' ? die.color : die.crazyColor
-
       let interimState = { ...state, players: playersCopy, dicePool: next, usedDice }
+
+      // move snail according to die (die includes a face `value` set when drawn)
+      // For grey/crazy dice, apply the carrier rule: if exactly one crazy snail is
+      // carrying colored snails, always move that carrier regardless of die colour.
+      const snailId = die.type === 'color'
+        ? die.color
+        : resolveCrazySnailId(state.track, die.crazyColor)
 
       interimState = moveSnail(interimState, snailId, die.value)
 
-      // Log the roll
+      // Log the roll — if carrier override was applied, note the actual snail moved
       const rollerPlayer = interimState.players.find(p => p.id === playerId)
       const playerName = rollerPlayer ? rollerPlayer.name : playerId
-      const rollLabel = die.type === 'color' ? `${die.color} ${die.value}` : `${die.crazyColor} ${die.value}`
+      let rollLabel
+      if (die.type === 'color') {
+        rollLabel = `${die.color} ${die.value}`
+      } else if (snailId !== die.crazyColor) {
+        rollLabel = `grey → ${die.crazyColor} ${die.value} (carrier override: moved ${snailId})`
+      } else {
+        rollLabel = `${die.crazyColor} ${die.value}`
+      }
       interimState.eventLog = (interimState.eventLog || []).concat([`${playerName} rolled: ${rollLabel}`])
 
       // Log current placements after move

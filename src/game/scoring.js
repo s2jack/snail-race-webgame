@@ -89,13 +89,17 @@ export function scoreRace(state) {
   const { winner, loser } = findRaceWinnerAndLoser(next)
 
   function resolvePile(pile, targetId) {
+    // Payout rank is determined by position among CORRECT bets only.
+    // Wrong bets always lose 1 coin regardless of their pile position.
+    let correctRank = 0
     for (let i = 0; i < pile.length; i++) {
       const card = pile[i]
       const owner = next.players.find(p => p.id === card.ownerId)
-      const payout = RACE_PAYOUTS[Math.min(i, RACE_PAYOUTS.length - 1)]
       if (!owner) continue
       if (card.color === targetId) {
+        const payout = RACE_PAYOUTS[Math.min(correctRank, RACE_PAYOUTS.length - 1)]
         owner.coins = (owner.coins || 0) + payout
+        correctRank++
       } else {
         owner.coins = Math.max(0, (owner.coins || 0) - 1)
       }

@@ -42,12 +42,9 @@ export function moveSnail(state, snailId, distance, { ignoreSpectator = false } 
   ensureSpace(track, toNumber)
   const toSpace = ensureSpace(track, toNumber)
 
-  // Arriving placement: forward -> on top, backward -> underneath
-  if (dir === 1) {
-    toSpace.snails = toSpace.snails.concat(movingStack)
-  } else {
-    toSpace.snails = movingStack.concat(toSpace.snails)
-  }
+  // Arriving placement: dice movement always lands on top, regardless of direction.
+  // Only a trap spectator tile (below) sends a stack underneath.
+  toSpace.snails = toSpace.snails.concat(movingStack)
 
   // Check finish line (only racing snails count toward race end)
   if (!isCrazy && toNumber >= FINISH_LINE) {
@@ -68,8 +65,12 @@ export function moveSnail(state, snailId, distance, { ignoreSpectator = false } 
     // NOTE: spectator tiles remain on the board until the end of the game
     // Do NOT remove the tile or change owner's spectator state here.
 
-    // Apply boost or trap effect: board-relative +1 (boost) or -1 (trap)
-    const effect = tile.side === 'boost' ? 1 : -1
+    // Apply boost or trap effect relative to the snail's travel direction.
+    // Boost: one extra step in travel direction (+dir).
+    // Trap:  one step back against travel direction (-dir).
+    // This means a crazy snail (dir=-1) hitting a trap gets pushed +1 (toward finish),
+    // and a colored snail (dir=+1) hitting a trap gets pushed -1 (back toward start).
+    const effect = tile.side === 'boost' ? dir : -dir
 
     // remove movingStack from current toSpace (we placed them earlier)
     toSpace.snails = toSpace.snails.filter(s => !movingStack.find(ms => ms.id === s.id))
@@ -77,8 +78,8 @@ export function moveSnail(state, snailId, distance, { ignoreSpectator = false } 
     const secondaryNumber = toNumber + effect
     const secondarySpace = ensureSpace(track, secondaryNumber)
 
-    // If boosted forward (effect=+1): arriving stack placed on top
-    if (effect === 1) {
+    // Boost: stack lands on top. Trap: stack lands underneath.
+    if (tile.side === 'boost') {
       secondarySpace.snails = secondarySpace.snails.concat(movingStack)
     } else {
       // Trap: arriving stack placed underneath
@@ -95,6 +96,36 @@ export function moveSnail(state, snailId, distance, { ignoreSpectator = false } 
   }
 
   return next
+}
+
+/**
+ * Determine which crazy snail to actually move when the grey die is rolled.
+ *
+ * Rules:
+ *  - If exactly ONE crazy snail carries any colored snails (has non-crazy snails
+ *    stacked on top of it), always move that carrier — the die's crazyColor is ignored.
+ *  - Otherwise (both carry, or neither carries) move the die's crazyColor snail.
+ *
+ * "Carries" means there is at least one non-crazy snail at a higher index in the
+ * same space stack (snails[0] = bottom, snails[last] = top).
+ */
+export function resolveCrazySnailId(track, dieColor) {
+  const carriers = CRAZY_SNAIL_COLORS.filter(color => {
+    for (const space of track) {
+      const idx = space.snails.findIndex(s => s.id === color)
+      if (idx === -1) continue
+      // any non-crazy snail above this one in the stack?
+      const above = space.snails.slice(idx + 1)
+      if (above.some(s => !CRAZY_SNAIL_COLORS.includes(s.id))) return true
+    }
+    return false
+  })
+
+  // Edge case: exactly one crazy snail is carrying colored snails → move it
+  if (carriers.length === 1) return carriers[0]
+
+  // Both carrying or neither carrying → honour the die's colour
+  return dieColor
 }
 
 export function getFirstPlaceSnail(state) {
