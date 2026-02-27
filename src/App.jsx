@@ -86,6 +86,9 @@ function SpectatorTilePanel() {
     if (!canPlace) return
     const pos = spaceInput ? parseInt(spaceInput, 10) : tile?.position
     if (!pos || Number.isNaN(pos)) return
+    // Guard: if nothing actually changed (same space, same side) don't dispatch — it would
+    // end the turn without the player doing anything meaningful.
+    if (tile?.onBoard && tile.position === pos && tile.side === side) return
     const move = !!(tile?.onBoard && tile.position !== pos)
     dispatch({ type: 'PLACE_SPECTATOR', playerId: currentPlayer.id, spaceNumber: pos, side, move })
     setSpaceInput('')

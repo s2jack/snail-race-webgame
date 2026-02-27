@@ -306,7 +306,7 @@ export function Scoreboard() {
         <div className="overlay-fade-in" style={card(500)}>
           <div style={{ paddingBottom: 16, marginBottom: 20, borderBottom: `3px solid ${C.gold}`, textAlign: 'center' }}>
             <div style={{ fontSize: 32, marginBottom: 4 }}>&#x1F40C;</div>
-            <h2 style={{ margin: 0, fontSize: 24, color: C.brown }}>Game Over!</h2>
+            <h2 style={{ margin: 0, fontSize: 24, color: C.brown }}>Race Finished!</h2>
             <div style={{ fontSize: 13, color: C.muted, marginTop: 4 }}>Final coin standings</div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>

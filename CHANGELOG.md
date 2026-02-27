@@ -8,8 +8,15 @@ When no version tag exists yet, changes are listed under **Unreleased**.
 
 ## [Unreleased] — 2026-02-28
 
+---
+
+## [0.3.0] — 2026-02-28
+
 ### Workflow / Copilot Instructions
 - Updated commit message rule: generating a commit message now immediately promotes `[Unreleased]` to a versioned block and opens a fresh `[Unreleased]` section in one step, without requiring a separate confirmation
+
+### Bug Fix / SpectatorTilePanel
+- Fixed a turn-skipping bug where clicking the "Apply Tile" button with no changes (same space and same type already on board) would silently end the player's turn; added a no-op guard in `applyTile()` — if `tile.onBoard && tile.position === pos && tile.side === side`, the dispatch is skipped entirely
 
 ### UI / BettingPanel
 - Replaced flat coloured circles in the Leg Bet Stacks with physically-stacked coin PNG images (`/colored_coins/{color}-coin-{value}.png`); coins are rendered bottom-to-top so the highest-value (top) tile paints on top, each layer offset 8 px downward to give a 3-D stack appearance
