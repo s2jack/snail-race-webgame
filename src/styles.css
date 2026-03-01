@@ -74,6 +74,33 @@ body {
   100% { transform: scale(1); opacity: 1; }
 }
 
+/* ── Snail hop: stylish arc for each space-by-space step ─────────────── */
+@keyframes snailHop {
+  0%   { transform: translateY(0) scale(1); }
+  18%  { transform: translateY(-4px) scaleY(0.88) scaleX(1.1); }  /* crouch */
+  38%  { transform: translateY(-26px) scaleY(1.1) scaleX(0.92); } /* launch */
+  55%  { transform: translateY(-30px) scale(1.02); }               /* apex */
+  72%  { transform: translateY(-10px) scaleY(0.97); }              /* descend */
+  88%  { transform: translateY(3px) scaleY(0.90) scaleX(1.08); }   /* squash land */
+  100% { transform: translateY(0) scale(1); }                      /* settle */
+}
+.snail-hopping {
+  animation: snailHop 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ── Spectator tile bounce: wobbly redirect for boost / trap ─────────── */
+@keyframes snailSpectatorBounce {
+  0%   { transform: translateY(0) rotate(0deg) scale(1); }
+  15%  { transform: translateY(-18px) rotate(12deg) scale(1.06); }
+  35%  { transform: translateY(-24px) rotate(-10deg) scale(1.1); }
+  55%  { transform: translateY(-12px) rotate(6deg); }
+  75%  { transform: translateY(2px) rotate(-3deg) scale(0.95); }
+  100% { transform: translateY(0) rotate(0deg) scale(1); }
+}
+.snail-spectator-bounce {
+  animation: snailSpectatorBounce 400ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 /* New die badge drops in with a slight rotation */
 @keyframes dieDropIn {
   0%   { transform: scale(0.2) rotate(-25deg); opacity: 0; }
@@ -94,6 +121,18 @@ body {
   35%  { transform: scale(1.3); }
   65%  { transform: scale(0.9); }
   100% { transform: scale(1); }
+}
+
+/* ── Coin drops under gravity & settles: lands with squash ──────────── */
+@keyframes coinSettle {
+  0%   { transform: translateY(-60px) scaleY(1) opacity: 0; }
+  45%  { transform: translateY(calc(-4px + var(--coin-stack-depth, 0px))) scaleY(1.12) scaleX(0.94) opacity: 1; }
+  65%  { transform: translateY(calc(2px + var(--coin-stack-depth, 0px))) scaleY(0.92) scaleX(1.04); }
+  85%  { transform: translateY(calc(-1px + var(--coin-stack-depth, 0px))) scaleY(1.04) scaleX(0.98); }
+  100% { transform: translateY(var(--coin-stack-depth, 0px)) scaleY(1) scaleX(1) opacity: 1; }
+}
+.coin-settling {
+  animation: coinSettle 420ms cubic-bezier(0.36, 0, 0.66, -0.56) both;
 }
 
 /* Leg bet card shakes slightly on bet-place denial (future use) */
@@ -191,15 +230,6 @@ body {
   border-color: #b98a49 !important;
   box-shadow: 0 3px 10px rgba(185, 138, 73, 0.25) !important;
   background: #fffbf0 !important;
-}
-/* Spectator tile spaces keep their own colour on hover */
-.board-space.board-space--boost:hover {
-  background: #d4f0d0 !important;
-  border-color: #7bc97a !important;
-}
-.board-space.board-space--trap:hover {
-  background: #f9d8d8 !important;
-  border-color: #e08080 !important;
 }
 
 /* ─── Leg bet card lift ───────────────────────────────────────────────── */

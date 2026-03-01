@@ -89,11 +89,10 @@ export function BettingPanel() {
           const topValue = stack[0] ? stack[0].value : null
           const canBet = isActive && !!topValue
           const stackLen = stack.length
-          // Each coin image is ~52 px wide; stack coins offset 8 px downward per layer.
+          // Each coin image width
           const COIN_W = 52
-          const COIN_OFFSET = 8
-          // Container height holds the tallest possible stack (4 tiles) so layout is stable.
-          const CONTAINER_H = COIN_W + 3 * COIN_OFFSET  // 76 px
+          // Container height: coin size + padding for animation (drop animation goes -60px up, needs headroom)
+          const CONTAINER_H = COIN_W + 20
 
           return (
             <div
@@ -120,26 +119,57 @@ export function BettingPanel() {
                   borderRadius: '50%',
                   border: '2px dashed #c9aa7a',
                   boxSizing: 'border-box',
-                  position: 'absolute', top: 0,
+                  position: 'absolute', bottom: 0,
                 }} />
               ) : (
-                /* Render coins from bottom → top so the top tile (index 0) paints last and sits visually on top */
+                /* Render coins from bottom → top (reversed) so top tile (index 0) paints last and sits visually on top */
                 [...stack].reverse().map((tile, i) => {
-                  const stackIdx = stackLen - 1 - i  // original position in stack array
+                  const stackIdx = stackLen - 1 - i  // current position in stack array (0 = first-to-be-taken)
+                  // Map to the coin's ORIGINAL slot in the full 4-tile stack so positions are
+                  // stable — removing the top coin doesn't shift the remaining coins.
+                  const FULL_STACK_SIZE = 4
+                  const originalIdx = stackIdx + (FULL_STACK_SIZE - stackLen)
+                  // Stagger the animation: coins at the bottom settle first, coins on top settle later
+                  const animationDelay = `${Math.max(0, (stackLen - 1 - stackIdx) * 80)}ms`
+                  // CSS custom property for tiny visual stacking depth (1.5px per coin)
+                  const coinStackDepth = `${originalIdx * 1.5}px`
+
+                  // originalIdx 3 = bottommost coin slot → anchors to container bottom
+                  // All other slots offset from container top so high-value coins peek from above
+                  const verticalPos = originalIdx === FULL_STACK_SIZE - 1
+                    ? { bottom: 0 }
+                    : { top: originalIdx * 7 }
+
                   return (
-                    <img
+                    <div
                       key={stackIdx}
-                      src={`/colored_coins/${color}-coin-${tile.value}.png`}
-                      alt={`${color} ${tile.value}`}
                       style={{
                         position: 'absolute',
-                        top: stackIdx * COIN_OFFSET,
+                        ...verticalPos,
                         left: 0,
                         width: COIN_W,
+                        height: COIN_W,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
                         pointerEvents: 'none',
-                        display: 'block',
+                        zIndex: FULL_STACK_SIZE - originalIdx, // value-5 coin = highest z, value-2 bottom = lowest z
                       }}
-                    />
+                    >
+                      <img
+                        src={`/colored_coins/${color}-coin-${tile.value}.png`}
+                        alt={`${color} ${tile.value}`}
+                        style={{
+                          width: COIN_W,
+                          height: COIN_W,
+                          display: 'block',
+                          filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.2))',
+                          '--coin-stack-depth': coinStackDepth,
+                          animation: `coinSettle 420ms cubic-bezier(0.36, 0, 0.66, -0.56) both`,
+                          animationDelay,
+                        }}
+                      />
+                    </div>
                   )
                 })
               )}

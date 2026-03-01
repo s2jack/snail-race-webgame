@@ -68,6 +68,52 @@ export default function App() {
 const SNAIL_HEX = { red: '#e53935', blue: '#1e88e5', green: '#43a047', yellow: '#fdd835', purple: '#8e24aa', black: '#222', white: '#eee' }
 const CRAZY = ['black', 'white']
 
+function HelpTip({ text }) {
+  const [visible, setVisible] = useState(false)
+  return (
+    <span style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', marginLeft: 6 }}>
+      <span
+        onMouseEnter={() => setVisible(true)}
+        onMouseLeave={() => setVisible(false)}
+        style={{
+          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+          width: 16, height: 16, borderRadius: '50%',
+          background: '#b98a49', color: '#fff',
+          fontSize: 10, fontWeight: 900,
+          cursor: 'default', userSelect: 'none',
+          lineHeight: 1, flexShrink: 0,
+        }}
+      >?</span>
+      {visible && (
+        <div style={{
+          position: 'absolute',
+          top: '120%',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 200,
+          background: '#3a2a10',
+          color: '#fff8ee',
+          padding: '10px 14px',
+          borderRadius: 8,
+          fontSize: 12,
+          lineHeight: 1.6,
+          width: 260,
+          boxShadow: '0 4px 16px rgba(0,0,0,0.35)',
+          pointerEvents: 'none',
+          whiteSpace: 'pre-line',
+        }}>
+          <div style={{
+            position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)',
+            borderWidth: '0 6px 6px', borderStyle: 'solid',
+            borderColor: 'transparent transparent #3a2a10',
+          }} />
+          {text}
+        </div>
+      )}
+    </span>
+  )
+}
+
 function SpectatorTilePanel() {
   const { state, dispatch } = useGameContext()
   const [spaceInput, setSpaceInput] = React.useState('')
@@ -106,9 +152,16 @@ function SpectatorTilePanel() {
 
   return (
     <div style={{ minWidth: 180 }}>
-      <p className="game-card-title" style={{ margin: '0 0 8px 0', display: 'flex', alignItems: 'center', gap: 4 }}>
+      <div className="game-card-title" style={{ margin: '0 0 8px 0', display: 'flex', alignItems: 'center', gap: 4 }}>
         🪨 Spectator Tile
-      </p>
+        <HelpTip text={`Place your tile on any space (1–16) to affect snails that land there.
+
+• 🚀 Boost: moves the landing snail +1 space forward.
+• 🪤 Trap: moves the landing snail −1 space backward.
+• 🪙 Earn 1 coin whenever any snail steps on your tile.
+
+You can place, move, or flip your tile once per turn (before rolling). Chain reactions are not triggered.`} />
+      </div>
 
       {/* Status */}
       <div style={{ marginBottom: 8, fontSize: 11, color: '#7a5a2a' }}>
