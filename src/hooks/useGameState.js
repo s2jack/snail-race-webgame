@@ -2,7 +2,7 @@ import { useReducer, createContext, useContext } from 'react'
 import { SNAIL_COLORS, CRAZY_SNAIL_COLORS, STARTING_COINS, TRACK_LENGTH, MIN_PLAYERS, FINISH_LINE } from '../game/constants'
 import { createDicePool, drawDie } from '../game/dice'
 import { moveSnail } from '../game/movement'
-import { scoreLeg } from '../game/scoring'
+import { scoreLeg, scoreRace } from '../game/scoring'
 import { canPlaceLegBet, canPlaceRaceBet, canPlaceSpectator } from '../game/validation'
 
 // initialize empty track 1..TRACK_LENGTH
@@ -111,9 +111,43 @@ function reducer(state, action) {
       // move snail according to die (die includes a face `value` set when drawn)
       const snailId = die.type === 'color' ? die.color : die.crazyColor
 
+      // ── Compute animation path BEFORE moveSnail mutates the track ──
+      const _isCrazy = CRAZY_SNAIL_COLORS.includes(snailId)
+      const _dir = _isCrazy ? -1 : 1
+      let _fromSpace = null
+      let _movingStackIds = []
+      for (const sp of state.track) {
+        const idx = sp.snails.findIndex(s => s.id === snailId)
+        if (idx !== -1) {
+          _fromSpace = sp.spaceNumber
+          _movingStackIds = sp.snails.slice(idx).map(s => s.id)
+          break
+        }
+      }
+      const _animSteps = []
+      let _spectatorStepIdx = null
+      if (_fromSpace !== null) {
+        for (let i = 0; i <= die.value; i++) _animSteps.push(_fromSpace + _dir * i)
+        const _dest = _fromSpace + _dir * die.value
+        const _destSp = state.track.find(sp => sp.spaceNumber === _dest)
+        if (_destSp && _destSp.spectatorTile) {
+          const _eff = _destSp.spectatorTile.side === 'boost' ? _dir : -_dir
+          _animSteps.push(_dest + _eff)
+          _spectatorStepIdx = _animSteps.length - 1
+        }
+      }
+
       let interimState = { ...state, players: playersCopy, dicePool: next, usedDice }
 
       interimState = moveSnail(interimState, snailId, die.value)
+
+      // Attach animation metadata for the Board's step-by-step hop display
+      interimState.lastMove = {
+        id: Date.now(),
+        movingStackIds: _movingStackIds,
+        steps: _animSteps,
+        spectatorStepIndex: _spectatorStepIdx,
+      }
 
       // Log the roll
       const rollerPlayer = interimState.players.find(p => p.id === playerId)
