@@ -8,6 +8,12 @@ When no version tag exists yet, changes are listed under **Unreleased**.
 
 ## [Unreleased] — 2026-03-02
 
+### Bug Fix / Game Logic
+- Fixed crazy-snail carrier rule not being enforced during dice resolution. `useGameState.js` was using `die.crazyColor` directly instead of calling `resolveCrazySnailId()`. Now imports and calls `resolveCrazySnailId(state.track, die.crazyColor)` in the `ROLL_DIE` case, so that if exactly one crazy snail is carrying a non-crazy snail the carrier always moves regardless of which colour the grey die shows.
+
+### Tests
+- Added `resolveCrazySnailId — carrier rule` describe block in `test/movement.test.js` with five cases: exact bug reproduction (black die / white carries red → white moves), single carrier wins, neither carrying honours die colour, both carrying honours die colour, and crazy-on-crazy top does not count as a carrier.
+
 ---
 
 ## [0.3.1] — 2026-03-01

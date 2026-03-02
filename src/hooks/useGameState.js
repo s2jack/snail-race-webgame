@@ -1,7 +1,7 @@
 import { useReducer, createContext, useContext } from 'react'
 import { SNAIL_COLORS, CRAZY_SNAIL_COLORS, STARTING_COINS, TRACK_LENGTH, MIN_PLAYERS, FINISH_LINE } from '../game/constants'
 import { createDicePool, drawDie } from '../game/dice'
-import { moveSnail } from '../game/movement'
+import { moveSnail, resolveCrazySnailId } from '../game/movement'
 import { scoreLeg, scoreRace } from '../game/scoring'
 import { canPlaceLegBet, canPlaceRaceBet, canPlaceSpectator } from '../game/validation'
 
@@ -109,7 +109,9 @@ function reducer(state, action) {
       const usedDice = (state.usedDice || []).concat(die)
 
       // move snail according to die (die includes a face `value` set when drawn)
-      const snailId = die.type === 'color' ? die.color : die.crazyColor
+      // For grey dice: check the carrier rule before honouring die colour.
+      // If exactly one crazy snail is carrying non-crazy snails, that one must move.
+      const snailId = die.type === 'color' ? die.color : resolveCrazySnailId(state.track, die.crazyColor)
 
       // ── Compute animation path BEFORE moveSnail mutates the track ──
       const _isCrazy = CRAZY_SNAIL_COLORS.includes(snailId)

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { moveSnail } from '../src/game/movement.js'
+import { moveSnail, resolveCrazySnailId } from '../src/game/movement.js'
 
 function makeState(track = [], players = []) {
   return { players, track, raceEnded: false }
@@ -109,5 +109,46 @@ describe('movement and stacking', () => {
     expect(ids(next, 7)).toEqual(['green', 'white', 'yellow', 'purple'])
     // #10 should be empty
     expect(ids(next, 10)).toEqual([])
+  })
+})
+
+// ─── resolveCrazySnailId ─────────────────────────────────────────────────────
+describe('resolveCrazySnailId — carrier rule', () => {
+  // Build a minimal track array directly (no full state needed)
+  function track(...spaceDefs) {
+    return spaceDefs.map(([n, snailIds]) => ({
+      spaceNumber: n,
+      snails: snailIds.map(id => ({ id })),
+      spectatorTile: undefined,
+    }))
+  }
+
+  it('exact bug: black die rolled but white carries red — white must move', () => {
+    // white has red on top; black is alone → exactly 1 carrier → white moves
+    const t = track([3, ['white', 'red']], [8, ['black']])
+    expect(resolveCrazySnailId(t, 'black')).toBe('white')
+  })
+
+  it('exactly one carrier (black carries blue) → ignore die colour, move black', () => {
+    const t = track([5, ['black', 'blue']], [9, ['white']])
+    expect(resolveCrazySnailId(t, 'white')).toBe('black')
+  })
+
+  it('neither crazy snail carries coloured snails → honour die colour', () => {
+    const t = track([3, ['white']], [8, ['black']], [5, ['red']])
+    expect(resolveCrazySnailId(t, 'black')).toBe('black')
+    expect(resolveCrazySnailId(t, 'white')).toBe('white')
+  })
+
+  it('both crazy snails carry coloured snails → honour die colour', () => {
+    const t = track([3, ['white', 'red']], [8, ['black', 'blue']])
+    expect(resolveCrazySnailId(t, 'black')).toBe('black')
+    expect(resolveCrazySnailId(t, 'white')).toBe('white')
+  })
+
+  it('crazy snail with only another crazy snail on top is NOT a carrier', () => {
+    // white has black on top — but black is crazy too, so white is NOT carrying coloured snails
+    const t = track([3, ['white', 'black']], [5, ['red']])
+    expect(resolveCrazySnailId(t, 'black')).toBe('black')
   })
 })
