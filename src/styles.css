@@ -125,14 +125,237 @@ body {
 
 /* ── Coin drops under gravity & settles: lands with squash ──────────── */
 @keyframes coinSettle {
-  0%   { transform: translateY(-60px) scaleY(1) opacity: 0; }
-  45%  { transform: translateY(calc(-4px + var(--coin-stack-depth, 0px))) scaleY(1.12) scaleX(0.94) opacity: 1; }
+  0%   { transform: translateY(-60px) scaleY(1); opacity: 0; }
+  45%  { transform: translateY(calc(-4px + var(--coin-stack-depth, 0px))) scaleY(1.12) scaleX(0.94); opacity: 1; }
   65%  { transform: translateY(calc(2px + var(--coin-stack-depth, 0px))) scaleY(0.92) scaleX(1.04); }
   85%  { transform: translateY(calc(-1px + var(--coin-stack-depth, 0px))) scaleY(1.04) scaleX(0.98); }
-  100% { transform: translateY(var(--coin-stack-depth, 0px)) scaleY(1) scaleX(1) opacity: 1; }
+  100% { transform: translateY(var(--coin-stack-depth, 0px)) scaleY(1) scaleX(1); opacity: 1; }
 }
 .coin-settling {
   animation: coinSettle 420ms cubic-bezier(0.36, 0, 0.66, -0.56) both;
+}
+
+/* Leg bet card shakes slightly on bet-place denial (future use) */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25%       { transform: translateX(-6px); }
+  75%       { transform: translateX(6px); }
+}
+
+/* Countdown circle pops in with a scale bounce each tick */
+@keyframes countdownPulse {
+  0%   { transform: scale(1.35); opacity: 0.6; }
+  60%  { transform: scale(0.95); opacity: 1; }
+  100% { transform: scale(1);    opacity: 1; }
+}
+
+/* ─── Snail badge ─────────────────────────────────────────────────────── */
+.snail-badge {
+  animation: snailPopIn 0.38s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* ─── Used die badge ──────────────────────────────────────────────────── */
+.die-badge {
+  animation: dieDropIn 0.42s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* ─── Overlay modal card ──────────────────────────────────────────────── */
+.overlay-fade-in {
+  animation: fadeSlideUp 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ─── Green primary button (Roll Die, Start Next Leg, Start Game) ─────── */
+.btn-green {
+  transition: filter 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease !important;
+}
+.btn-green:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 14px rgba(60, 140, 40, 0.4) !important;
+}
+.btn-green:active:not(:disabled) {
+  transform: translateY(1px) scale(0.96);
+  filter: brightness(0.92);
+  box-shadow: none !important;
+}
+
+/* ─── Gold secondary button (Place Tile, Randomize, Reveal) ──────────── */
+.btn-gold {
+  transition: filter 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease !important;
+}
+.btn-gold:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(185, 138, 73, 0.4) !important;
+}
+.btn-gold:active:not(:disabled) {
+  transform: translateY(1px) scale(0.96);
+  filter: brightness(0.9);
+  box-shadow: none !important;
+}
+
+/* ─── Muted secondary button (Flip Side, Win, Lose, Clear) ───────────── */
+.btn-secondary {
+  transition: filter 0.15s ease, transform 0.1s ease !important;
+}
+.btn-secondary:hover:not(:disabled) {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+.btn-secondary:active:not(:disabled) {
+  transform: translateY(1px) scale(0.96);
+  filter: brightness(0.9);
+}
+
+/* ─── Colour-coded bet button (snail colour background) ──────────────── */
+.btn-bet {
+  transition: filter 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease !important;
+}
+.btn-bet:hover:not(:disabled) {
+  filter: brightness(1.12) saturate(1.15);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.22) !important;
+}
+.btn-bet:active:not(:disabled) {
+  transform: translateY(1px) scale(0.95);
+  filter: brightness(0.9);
+  box-shadow: none !important;
+}
+
+/* ─── Board space card ────────────────────────────────────────────────── */
+.board-space {
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+.board-space:hover {
+  border-color: #b98a49 !important;
+  box-shadow: 0 3px 10px rgba(185, 138, 73, 0.25) !important;
+  background: #fffbf0 !important;
+}
+
+/* ─── Leg bet card lift ───────────────────────────────────────────────── */
+.leg-bet-card {
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  cursor: default;
+}
+.leg-bet-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.14) !important;
+}
+
+/* ─── Race bet card hover ─────────────────────────────────────────────── */
+.race-bet-card {
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.race-bet-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 14px rgba(0,0,0,0.12) !important;
+}
+
+/* ─── Toggle tab button hover ─────────────────────────────────────────── */
+.panel-toggle {
+  transition: right 0.3s ease, background 0.15s ease, filter 0.15s ease !important;
+}
+.panel-toggle:hover {
+  filter: brightness(1.06);
+  background: #f5e8cc !important;
+}
+
+/* ─── Add Player button (blue) ────────────────────────────────────────── */
+.btn-blue {
+  transition: filter 0.15s ease, transform 0.1s ease !important;
+}
+.btn-blue:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+.btn-blue:active:not(:disabled) {
+  transform: translateY(1px) scale(0.96);
+  filter: brightness(0.9);
+}
+.app-root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 16px;
+  padding-right: 0;
+}
+
+.app-title {
+  margin: 0 0 16px 0;
+  font-size: 28px;
+  font-weight: 800;
+  color: #5a3e1b;
+  letter-spacing: 0.5px;
+}
+
+.game-card {
+  background: #fff8ee;
+  border: 4px solid #b98a49;
+  border-radius: 8px;
+  padding: 14px 16px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+}
+
+.game-card-title {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #7a5a2a;
+}
+
+.section-divider {
+  width: 1px;
+  background-color: #c9aa7a;
+  align-self: stretch;
+  flex-shrink: 0;
+}
+
+.game-area {
+  display: flex;
+  gap: 16px;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+/* Smooth scrolling for player card content */
+@media (max-width: 1024px) {
+  .app-root {
+    padding-left: 8px;
+    padding-right: 0;
+  }
+}
+
+/* ─── Keyframe animations ──────────────────────────────────────────────── */
+
+/* Snail badge pops in with a bouncy overshoot whenever it moves to a new space */
+@keyframes snailPopIn {
+  0%   { transform: scale(0.3) translateY(-10px); opacity: 0; }
+  55%  { transform: scale(1.18) translateY(0);    opacity: 1; }
+  75%  { transform: scale(0.94); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* New die badge drops in with a slight rotation */
+@keyframes dieDropIn {
+  0%   { transform: scale(0.2) rotate(-25deg); opacity: 0; }
+  60%  { transform: scale(1.14) rotate(5deg);  opacity: 1; }
+  80%  { transform: scale(0.95) rotate(-2deg); }
+  100% { transform: scale(1)    rotate(0deg);  opacity: 1; }
+}
+
+/* Overlay card slides up from slightly below */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(20px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+
+/* Coin badge bounces when updated */
+@keyframes coinPop {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.3); }
+  65%  { transform: scale(0.9); }
+  100% { transform: scale(1); }
 }
 
 /* Leg bet card shakes slightly on bet-place denial (future use) */
