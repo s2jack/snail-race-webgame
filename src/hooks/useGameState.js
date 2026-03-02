@@ -338,6 +338,10 @@ function reducer(state, action) {
       return scored
     }
 
+    case 'RESTART_GAME':
+      // Reset fully back to the lobby / setup phase
+      return { ...initialState }
+
     default:
       return state
   }

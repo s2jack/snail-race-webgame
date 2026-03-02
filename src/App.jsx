@@ -334,7 +334,7 @@ function TurnOrder() {
 }
 
 function EventLogWidget({ eventLog }) {
-  const [minimized, setMinimized] = useState(true)
+  const [hovered, setHovered] = useState(false)
 
   const baseStyle = {
     position: 'fixed',
@@ -346,30 +346,36 @@ function EventLogWidget({ eventLog }) {
     borderBottom: 'none',
     borderRadius: '8px 8px 0 0',
     boxShadow: '0 -2px 12px rgba(0,0,0,0.15)',
-  }
-
-  if (minimized) {
-    return (
-      <div style={{ ...baseStyle, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 12px', minWidth: 250 }}>
-        <span style={{ fontWeight: 700, color: '#5a3e1b', fontSize: 13 }}>📋 Event Log</span>
-        <button onClick={() => setMinimized(false)} style={{ padding: '4px 10px', background: '#b98a49', color: '#fff', border: 'none', borderRadius: 4, fontWeight: 700, cursor: 'pointer' }}>Open</button>
-      </div>
-    )
+    transition: 'box-shadow 0.2s',
   }
 
   return (
-    <div style={{ ...baseStyle, width: 360, maxHeight: 'calc(100vh - 520px)', display: 'flex', flexDirection: 'column' }}>
-      {/* Header — always visible, never scrolls */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', borderBottom: '1px solid #d0b880', flexShrink: 0, background: '#fff8ee', borderRadius: '6px 6px 0 0' }}>
+    <div
+      style={{
+        ...baseStyle,
+        width: hovered ? 360 : 180,
+        maxHeight: hovered ? 'calc(100vh - 520px)' : 'auto',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        transition: 'width 0.2s ease, max-height 0.2s ease, box-shadow 0.2s',
+        boxShadow: hovered ? '0 -4px 18px rgba(0,0,0,0.22)' : '0 -2px 12px rgba(0,0,0,0.15)',
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      {/* Header — always visible */}
+      <div style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', borderBottom: hovered ? '1px solid #d0b880' : 'none', flexShrink: 0, background: '#fff8ee', borderRadius: '6px 6px 0 0', whiteSpace: 'nowrap' }}>
         <strong style={{ color: '#5a3e1b', fontSize: 13 }}>📋 Event Log</strong>
-        <button onClick={() => setMinimized(true)} style={{ padding: '4px 10px', background: '#b98a49', color: '#fff', border: 'none', borderRadius: 4, fontWeight: 700, cursor: 'pointer', fontSize: 12 }}>Minimize</button>
       </div>
-      {/* Scrollable entries — newest at top */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '8px 12px', fontSize: 13, lineHeight: '1.5', color: '#3a2a10' }}>
-        {eventLog.slice(-200).slice().reverse().map((l, i) => (
-          <div key={i} style={{ marginBottom: 5, padding: '4px 0', borderBottom: '1px solid #ede0c8' }}>{l}</div>
-        ))}
-      </div>
+      {/* Scrollable entries — only visible when hovering */}
+      {hovered && (
+        <div style={{ flex: 1, overflowY: 'auto', padding: '8px 12px', fontSize: 13, lineHeight: '1.5', color: '#3a2a10' }}>
+          {eventLog.slice(-200).slice().reverse().map((l, i) => (
+            <div key={i} style={{ marginBottom: 5, padding: '4px 0', borderBottom: '1px solid #ede0c8' }}>{l}</div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

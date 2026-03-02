@@ -14,6 +14,15 @@ When no version tag exists yet, changes are listed under **Unreleased**.
 ### Tests
 - Added `resolveCrazySnailId — carrier rule` describe block in `test/movement.test.js` with five cases: exact bug reproduction (black die / white carries red → white moves), single carrier wins, neither carrying honours die colour, both carrying honours die colour, and crazy-on-crazy top does not count as a carrier.
 
+### UI / Scoreboard
+- Added "🐌 New Game" button to the Race Finished screen. Dispatches `RESTART_GAME` to reset state back to the lobby.
+
+### Game Logic
+- Added `RESTART_GAME` reducer case in `useGameState.js` — returns a fresh copy of `initialState`, sending the app back to the `setup` phase.
+
+### UI / EventLogWidget
+- Replaced button-based open/minimize with hover-to-expand behaviour. The widget shows a compact title tab at all times and expands to the full scrollable log on mouse-enter; collapses again on mouse-leave. "Open" and "Minimize" buttons removed.
+
 ---
 
 ## [0.3.1] — 2026-03-01

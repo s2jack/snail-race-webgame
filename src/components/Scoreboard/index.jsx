@@ -336,6 +336,26 @@ export function Scoreboard() {
             ))}
           </div>
 
+          {/* Restart button */}
+          <div style={{ marginTop: 24, display: 'flex', justifyContent: 'center' }}>
+            <button
+              onClick={() => dispatch({ type: 'RESTART_GAME' })}
+              style={{
+                padding: '10px 32px',
+                fontSize: 14, fontWeight: 800,
+                background: `linear-gradient(135deg, ${C.green}, ${C.greenDark})`,
+                color: '#fff',
+                border: `2px solid ${C.greenDark}`,
+                borderRadius: 8,
+                cursor: 'pointer',
+                letterSpacing: '0.4px',
+                boxShadow: '0 2px 8px rgba(60,130,40,0.25)',
+              }}
+            >
+              🐌 New Game
+            </button>
+          </div>
+
           {/* Race bet card results */}
           {state.raceSummary && (winnerColor || loserColor) && (
             <div style={{ marginTop: 20, paddingTop: 16, borderTop: `2px solid ${C.divider}` }}>
