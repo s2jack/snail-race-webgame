@@ -226,11 +226,8 @@ body {
 .board-space {
   transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
 }
-.board-space:hover {
-  border-color: #b98a49 !important;
-  box-shadow: 0 3px 10px rgba(185, 138, 73, 0.25) !important;
-  background: #fffbf0 !important;
-}
+/* Hover effects are applied via inline React styles only (Board/index.jsx),
+   so that invalid spaces (occupied, adjacent tile, etc.) are never highlighted. */
 
 /* â”€â”€â”€ Leg bet card lift â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .leg-bet-card {
