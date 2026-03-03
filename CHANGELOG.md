@@ -8,6 +8,12 @@ When no version tag exists yet, changes are listed under **Unreleased**.
 
 ## [Unreleased] — 2026-03-03
 
+### PWA Setup
+- Installed `vite-plugin-pwa` as a dev dependency to enable Progressive Web App support.
+- Created `vite.config.js` with `VitePWA` plugin configured: `registerType: 'autoUpdate'`, full web manifest (name, short_name, description, theme_color `#b98a49`, background_color `#fff8ee`, display `standalone`, start_url `/`), and icon entries for 192×192 and 512×512 PNGs under `/icons/`.
+- Updated `index.html` `<head>` with Apple PWA meta tags (`apple-mobile-web-app-capable`, `apple-mobile-web-app-status-bar-style`, `apple-mobile-web-app-title`, `apple-touch-icon`) and `theme-color` meta tag for Android/Chrome.
+- Created `vercel.json` with cache-control headers (`public, max-age=0, must-revalidate`) for `sw.js` and Workbox chunks to ensure the service worker is never stale-cached on Vercel.
+
 ### UI / Lobby
 - Fixed desktop lobby rendering: removed the standalone `if (state.phase === 'setup')` guard that wrapped `<Lobby />` in a bare flex container with no intrinsic width (causing the panel's `width: 100%` to collapse to 0 and leaving only the tiny Game Manual button visible). Reverted to the original `state.phase === 'setup'` ternary inside `app-root`, which provides a proper parent width for the panel.
 - Fixed stale `{false ? <Lobby /> : (...)}` left over from a previous edit; restored `state.phase === 'setup'` as the ternary condition.

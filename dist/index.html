@@ -4,9 +4,18 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Snail Race</title>
-    <script type="module" crossorigin src="/assets/index-yMDqmzLQ.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-Dar3hQrT.css">
-  </head>
+
+    <!-- PWA: iOS (Safari / Add to Home Screen) -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Snail Race" />
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+
+    <!-- PWA: Android / Chrome theme colour -->
+    <meta name="theme-color" content="#b98a49" />
+    <script type="module" crossorigin src="/assets/index-3MXkxrxm.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-DOOFVtyQ.css">
+  <link rel="manifest" href="/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/registerSW.js"></script></head>
   <body>
     <div id="root"></div>
   </body>
