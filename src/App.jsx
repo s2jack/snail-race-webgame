@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import Board from './components/Board'
 import DiceTower from './components/DiceTower'
 import BettingPanel from './components/BettingPanel'
@@ -11,6 +11,67 @@ export default function App() {
   const { state, dispatch } = useGameContext()
   const [spectatorSpace, setSpectatorSpace] = useState('')
   const [spectatorSide, setSpectatorSide] = useState('boost')
+
+  // ── Mobile detection ─────────────────────────────────────────────────
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768)
+  const [mobileTab, setMobileTab] = useState('board')
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  // ── Swipe gesture state ──────────────────────────────────────────────
+  const TABS = ['board', 'play', 'card']
+  const tabIndex = TABS.indexOf(mobileTab)
+
+  const touchStartX  = useRef(0)
+  const touchStartY  = useRef(0)
+  const touchDeltaX  = useRef(0)
+  // null = undecided, true = horizontal swipe, false = vertical scroll
+  const swipeAxis    = useRef(null)
+  const [liveOffset, setLiveOffset] = useState(0)   // real-time drag px
+
+  function onTouchStart(e) {
+    touchStartX.current = e.touches[0].clientX
+    touchStartY.current = e.touches[0].clientY
+    touchDeltaX.current = 0
+    swipeAxis.current   = null
+    setLiveOffset(0)
+  }
+
+  function onTouchMove(e) {
+    const dx = e.touches[0].clientX - touchStartX.current
+    const dy = e.touches[0].clientY - touchStartY.current
+
+    // Decide axis once we have ≥ 8 px of movement
+    if (swipeAxis.current === null && Math.hypot(dx, dy) >= 8) {
+      swipeAxis.current = Math.abs(dx) > Math.abs(dy)
+    }
+
+    if (swipeAxis.current) {
+      touchDeltaX.current = dx
+      // Resist at the edges so the UI hints there's nothing further
+      const atEdge = (tabIndex === 0 && dx > 0) || (tabIndex === TABS.length - 1 && dx < 0)
+      setLiveOffset(atEdge ? dx * 0.25 : dx)
+    }
+  }
+
+  function onTouchEnd() {
+    if (swipeAxis.current) {
+      const dx = touchDeltaX.current
+      if (Math.abs(dx) > 55) {
+        const next = dx < 0
+          ? Math.min(tabIndex + 1, TABS.length - 1)
+          : Math.max(tabIndex - 1, 0)
+        setMobileTab(TABS[next])
+      }
+    }
+    touchDeltaX.current = 0
+    swipeAxis.current   = null
+    setLiveOffset(0)
+  }
 
   const currentPlayer = state.players && state.players[state.currentPlayerIndex]
   const canPlaceNow = state.phase === 'playing' && (state.usedDice || []).length < 5
@@ -27,6 +88,126 @@ export default function App() {
     setSpectatorSpace('')
   }
 
+  // ── Shared spectator tile panel props ─────────────────────────────────
+  const spectatorProps = {
+    spaceInput: spectatorSpace,
+    setSpaceInput: setSpectatorSpace,
+    side: spectatorSide,
+    setSide: setSpectatorSide,
+    onApply: handleConfirmPlace,
+  }
+
+  // ── Mobile layout ────────────────────────────────────────────────────
+  if (isMobile) {
+    // Setup / Lobby on mobile — full-screen parchment scroll card
+    if (state.phase === 'setup') {
+      return (
+        <div style={{
+          minHeight: '100dvh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          overflowY: 'auto',
+        }}>
+          <Lobby />
+        </div>
+      )
+    }
+
+    // Translate the full track: each panel slot is exactly 100vw wide.
+    // Using vw-based calc() avoids any percentage-vs-container-width mismatch.
+    const trackX = `calc(${-tabIndex * 100}vw + ${liveOffset}px)`
+    const isSnapping = liveOffset === 0
+
+    return (
+      <div className="app-root">
+        {/* Sticky header */}
+        <div className="mobile-header">
+          <h1 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: '#5a3e1b' }}>🐌 Snail Race</h1>
+          <MobileHeaderInfo />
+        </div>
+
+        {/* Swipeable sliding track ─────────────────────────────────────── */}
+        <div
+          className="mobile-content"
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
+        >
+          {/* Inner 3-panel track — each slot is exactly 100vw */}
+          <div style={{
+            display: 'flex',
+            width: 'calc(3 * 100vw)',
+            height: '100%',
+            transform: `translateX(${trackX})`,
+            transition: isSnapping ? 'transform 0.3s cubic-bezier(0.25, 1, 0.5, 1)' : 'none',
+            willChange: 'transform',
+          }}>
+
+            {/* ── Slot 0: Board ─────────────────────────────────────── */}
+            <div style={{ width: '100vw', flexShrink: 0, overflowY: 'auto', overflowX: 'hidden', padding: '10px 10px 84px', WebkitOverflowScrolling: 'touch', boxSizing: 'border-box' }}>
+              <div className="game-card" style={{ padding: '10px 8px', marginBottom: 10 }}>
+                <div className="mobile-board-scroll">
+                  <Board
+                    onSpectatorSpaceSelect={setSpectatorSpace}
+                    selectedSpace={spectatorSpace}
+                    spectatorSide={spectatorSide}
+                    onSideChange={setSpectatorSide}
+                    onPlace={handleConfirmPlace}
+                  />
+                </div>
+              </div>
+              <div className="game-card" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 10 }}>
+                <div style={{ flex: 1, minWidth: 130 }}><SnailStandings /></div>
+                <div style={{ width: 1, background: '#e8d9bc', alignSelf: 'stretch' }} />
+                <div style={{ flex: 1, minWidth: 130 }}><TurnOrder /></div>
+              </div>
+              <EventLogWidgetMobile eventLog={state.eventLog || []} />
+            </div>
+
+            {/* ── Slot 1: Play ──────────────────────────────────────── */}
+            <div style={{ width: '100vw', flexShrink: 0, overflowY: 'auto', overflowX: 'hidden', padding: '10px 10px 84px', WebkitOverflowScrolling: 'touch', boxSizing: 'border-box' }}>
+              <div className="game-card" style={{ marginBottom: 10 }}>
+                <DiceTower />
+              </div>
+              <div className="game-card" style={{ marginBottom: 10 }}>
+                <BettingPanel />
+              </div>
+              <div className="game-card">
+                <SpectatorTilePanel {...spectatorProps} />
+              </div>
+            </div>
+
+            {/* ── Slot 2: My Card ───────────────────────────────────── */}
+            <div style={{ width: '100vw', flexShrink: 0, overflowY: 'auto', overflowX: 'hidden', padding: '10px 10px 84px', WebkitOverflowScrolling: 'touch', boxSizing: 'border-box' }}>
+              <div className="game-card">
+                <PlayerCard mobileMode />
+              </div>
+            </div>
+
+          </div>{/* /track */}
+        </div>
+
+        {/* Overlays always mounted */}
+        <Scoreboard />
+
+        {/* Bottom tab bar */}
+        <div className="mobile-tab-bar">
+          <button className={`mobile-tab-btn${mobileTab === 'board' ? ' active' : ''}`} onClick={() => setMobileTab('board')}>
+            <span className="tab-icon">🏟️</span>Board
+          </button>
+          <button className={`mobile-tab-btn${mobileTab === 'play' ? ' active' : ''}`} onClick={() => setMobileTab('play')}>
+            <span className="tab-icon">🎲</span>Play
+          </button>
+          <button className={`mobile-tab-btn${mobileTab === 'card' ? ' active' : ''}`} onClick={() => setMobileTab('card')}>
+            <span className="tab-icon">👤</span>My Card
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Desktop layout ───────────────────────────────────────────────────
   return (
     <div className="app-root">
       <h1 className="app-title">🐌 Snail Race</h1>
@@ -54,13 +235,7 @@ export default function App() {
             </div>
             <div className="section-divider" />
             <div style={{ flexShrink: 0, minWidth: 180 }}>
-              <SpectatorTilePanel
-                spaceInput={spectatorSpace}
-                setSpaceInput={setSpectatorSpace}
-                side={spectatorSide}
-                setSide={setSpectatorSide}
-                onApply={handleConfirmPlace}
-              />
+              <SpectatorTilePanel {...spectatorProps} />
             </div>
             <div className="section-divider" />
             <div style={{ flexShrink: 0 }}>
@@ -96,6 +271,68 @@ export default function App() {
 
 const SNAIL_HEX = { red: '#e53935', blue: '#1e88e5', green: '#43a047', yellow: '#fdd835', purple: '#8e24aa', black: '#222', white: '#eee' }
 const CRAZY = ['black', 'white']
+
+/* ─── Mobile: compact header row (current player + dice remaining) ──────── */
+function MobileHeaderInfo() {
+  const { state } = useGameContext()
+  const currentPlayer = state.players && state.players[state.currentPlayerIndex]
+  const diceLeft = 5 - (state.usedDice || []).length
+
+  if (!currentPlayer) return null
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+      {/* Current player name */}
+      <div style={{
+        background: 'linear-gradient(135deg, #56b243, #3d8a30)',
+        color: '#fff', fontWeight: 800, fontSize: 12,
+        padding: '4px 10px', borderRadius: 20,
+        border: '2px solid #3d8a30',
+        maxWidth: 110, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+      }}>
+        {currentPlayer.name}
+      </div>
+      {/* Dice remaining badge */}
+      <div style={{
+        background: '#fff8ee', border: '2px solid #b98a49',
+        borderRadius: 20, padding: '3px 9px',
+        fontSize: 12, fontWeight: 800, color: '#5a3e1b',
+        display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0,
+      }}>
+        🎲 <span>{diceLeft}</span>
+      </div>
+    </div>
+  )
+}
+
+/* ─── Mobile: inline event log (collapsible, shown inside Board tab) ─────── */
+function EventLogWidgetMobile({ eventLog }) {
+  const [expanded, setExpanded] = useState(false)
+  return (
+    <div style={{
+      background: 'rgba(255,248,238,0.94)', border: '2px solid #b98a49',
+      borderRadius: 8, overflow: 'hidden', marginTop: 0,
+    }}>
+      <button
+        onClick={() => setExpanded(v => !v)}
+        style={{
+          width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '8px 12px', background: 'transparent', border: 'none', cursor: 'pointer',
+          fontFamily: 'inherit',
+        }}
+      >
+        <strong style={{ color: '#5a3e1b', fontSize: 13 }}>📋 Event Log</strong>
+        <span style={{ color: '#9a7a4a', fontSize: 12 }}>{expanded ? '▲ Hide' : '▼ Show'}</span>
+      </button>
+      {expanded && (
+        <div style={{ padding: '0 12px 10px', fontSize: 12, lineHeight: 1.5, color: '#3a2a10', maxHeight: '30vh', overflowY: 'auto' }}>
+          {eventLog.slice(-100).slice().reverse().map((l, i) => (
+            <div key={i} style={{ marginBottom: 4, paddingBottom: 4, borderBottom: '1px solid #ede0c8' }}>{l}</div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 function HelpTip({ text }) {
   const [visible, setVisible] = useState(false)
