@@ -6,7 +6,23 @@ When no version tag exists yet, changes are listed under **Unreleased**.
 
 ---
 
-## [Unreleased] — 2026-03-04
+## [Unreleased] — 2026-03-03
+
+### UI / Lobby
+- Fixed desktop lobby rendering: removed the standalone `if (state.phase === 'setup')` guard that wrapped `<Lobby />` in a bare flex container with no intrinsic width (causing the panel's `width: 100%` to collapse to 0 and leaving only the tiny Game Manual button visible). Reverted to the original `state.phase === 'setup'` ternary inside `app-root`, which provides a proper parent width for the panel.
+- Fixed stale `{false ? <Lobby /> : (...)}` left over from a previous edit; restored `state.phase === 'setup'` as the ternary condition.
+
+---
+
+## [0.6.0] — 2026-03-03
+
+### UI / Lobby
+- Used `public/lobby/lobby-panel.png` as the background image of the Lobby panel (`background-size: 100% 100%`), with `aspect-ratio: 766/985` keeping the image proportions locked at all screen sizes.
+- All interactive elements (title, input strip, players list, Clear/Randomize buttons, Start Game, Game Manual link) are positioned via `position: absolute` with percentage-based `top`/`left`/`right`/`height` values calibrated to match each painted zone in the background image.
+- Input field uses a semi-transparent dark wood fill so text is readable over the painted wood strip.
+- Players list uses a near-transparent overlay so the parchment texture underneath shows through.
+- Fixed lobby overflow on desktop: extracted a dedicated early-return `setup` guard in the desktop code path of `App.jsx` that renders a full-screen centred wrapper (instead of embedding Lobby inside `app-root` with an `<h1>` above it); removed `minHeight: 100dvh` from the Lobby outer wrapper so it no longer forces the page to scroll.
+- Moved the Game Manual button from the bottom-centre (`top: 92%`) to the top-right corner of the panel (`top: 8%, right: 12%`) so it is always accessible without interfering with the main action area.
 
 ---
 

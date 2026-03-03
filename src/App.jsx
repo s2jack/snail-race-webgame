@@ -99,11 +99,10 @@ export default function App() {
 
   // ── Mobile layout ────────────────────────────────────────────────────
   if (isMobile) {
-    // Setup / Lobby on mobile — simple scrollable page with background
+    // Setup / Lobby on mobile — full-screen parchment scroll card
     if (state.phase === 'setup') {
       return (
-        <div className="app-root" style={{ overflowY: 'auto', padding: '10px 10px 20px' }}>
-          <h1 style={{ margin: '6px 0 14px', fontSize: 22, fontWeight: 800, color: '#5a3e1b' }}>🐌 Snail Race</h1>
+        <div style={{ minHeight: '100dvh', overflowY: 'auto' }}>
           <Lobby />
         </div>
       )
@@ -202,7 +201,7 @@ export default function App() {
     )
   }
 
-  // ── Desktop layout (unchanged) ───────────────────────────────────────
+  // ── Desktop layout ───────────────────────────────────────────────────
   return (
     <div className="app-root">
       <h1 className="app-title">🐌 Snail Race</h1>
