@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useLayoutEffect, useRef, useMemo } from 'react'
 import { useGameContext } from '../../context/GameContext'
+import { canPlaceSpectator } from '../../game/validation'
 
 /* ─── Animation timing constants ────────────────────────────────────────
  *
@@ -20,7 +21,7 @@ const INITIAL_DELAY_MS = 200
 const HOP_DURATION_MS  = 320
 const STEP_DELAY_MS    = 360
 
-export function Board() {
+export function Board({ onSpectatorSpaceSelect, selectedSpace, spectatorSide, onSideChange, onPlace }) {
   const { state } = useGameContext()
 
   /* ── helpers ─────────────────────────────────────────────────────────── */
@@ -43,6 +44,8 @@ export function Board() {
   // animState: { movingStackIds, steps, currentStep, spectatorStepIndex }
   const [animState, setAnimState] = useState(null)
   const lastMoveIdRef = useRef(null)
+  /* ── spectator hover state ───────────────────────────────────────────── */
+  const [hoveredSpace, setHoveredSpace] = useState(null)
 
   // Kick off step-by-step hop animation whenever a new lastMove appears.
   // useLayoutEffect runs BEFORE the browser paints, so the snail is placed
@@ -111,17 +114,123 @@ export function Board() {
   const rowTop    = displayTrack.slice(0, 8)
   const rowBottom = displayTrack.slice(8, 16).reverse()
 
+  /* ── valid spaces for spectator tile placement ───────────────────────── */
+  const currentPlayer = state.players && state.players[state.currentPlayerIndex]
+  const canPlaceNow = state.phase === 'playing' && (state.usedDice || []).length < 5
+  // Pre-compute a Set of valid space numbers per current state+player
+  const validSpectatorSpaces = useMemo(() => {
+    if (!canPlaceNow || !currentPlayer) return new Set()
+    const valid = new Set()
+    for (let n = 1; n <= 16; n++) {
+      const result = canPlaceSpectator(state, currentPlayer.id, n)
+      if (result.valid) valid.add(n)
+    }
+    return valid
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.track, state.phase, state.usedDice, currentPlayer?.id])
+
   function renderSpace(space) {
     const isBoost = space.spectatorTile?.side === 'boost'
     const isTrap  = space.spectatorTile?.side === 'trap'
     const bgNormal = isBoost ? '#d4f0d0' : isTrap ? '#f9d8d8' : '#fffdf7'
     const border   = isBoost ? '2px solid #7bc97a' : isTrap ? '2px solid #e08080' : '2px solid #c9aa7a'
+
+    const isValidForSpectator = validSpectatorSpaces.has(space.spaceNumber)
+    const isHovered = isValidForSpectator && hoveredSpace === space.spaceNumber
+    // Valid-space hover overrides: light gold tint + bolder border + shadow
+    const bgOverride = isHovered ? '#fef3d0' : bgNormal
+    const borderOverride = isHovered ? '2px solid #b98a49' : border
+    const shadowOverride = isHovered ? '0 3px 10px rgba(185,138,73,0.35)' : 'none'
+
+    const isSelected = selectedSpace !== '' && selectedSpace === String(space.spaceNumber)
+
     return (
       <div
         key={space.spaceNumber}
         className="board-space"
-        style={{ padding: '12px 10px', border, borderRadius: 6, minWidth: 0, background: bgNormal }}
+        onMouseEnter={() => isValidForSpectator && setHoveredSpace(space.spaceNumber)}
+        onMouseLeave={() => setHoveredSpace(null)}
+        onClick={() => {
+          if (isValidForSpectator && onSpectatorSpaceSelect) {
+            onSpectatorSpaceSelect(String(space.spaceNumber))
+          }
+        }}
+        style={{
+          padding: '12px 10px',
+          border: isSelected ? '2px solid #3d8a30' : borderOverride,
+          borderRadius: 6,
+          minWidth: 0,
+          position: 'relative',
+          background: isSelected ? '#edf9eb' : bgOverride,
+          boxShadow: isSelected ? '0 3px 10px rgba(61,138,48,0.3)' : shadowOverride,
+          cursor: isValidForSpectator ? 'pointer' : 'default',
+          transition: 'background 0.15s, border-color 0.15s, box-shadow 0.15s',
+          outline: isHovered && !isSelected ? '2px solid #e0c88a' : 'none',
+          outlineOffset: 1,
+        }}
       >
+        {/* Place confirmation overlay */}
+        {isSelected && (
+          <div style={{
+            position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+            background: 'rgba(237,249,235,0.95)',
+            borderRadius: 5,
+            display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center',
+            gap: 5, zIndex: 10, padding: '6px 4px',
+          }}>
+            <div style={{ fontSize: 10, fontWeight: 800, color: '#3d8a30', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              #{space.spaceNumber}
+            </div>
+            {/* Boost / Trap toggle */}
+            <div style={{ display: 'flex', gap: 4 }}>
+              {[['boost', '🚀'], ['trap', '🪤']].map(([s, emoji]) => (
+                <button
+                  key={s}
+                  onClick={e => { e.stopPropagation(); if (onSideChange) onSideChange(s) }}
+                  style={{
+                    padding: '3px 7px', fontSize: 13,
+                    background: spectatorSide === s
+                      ? (s === 'boost' ? 'linear-gradient(135deg,#56b243,#3d8a30)' : 'linear-gradient(135deg,#e05555,#b03030)')
+                      : '#f5ede0',
+                    color: spectatorSide === s ? '#fff' : '#9a7a4a',
+                    border: spectatorSide === s
+                      ? `2px solid ${s === 'boost' ? '#3d8a30' : '#b03030'}`
+                      : '2px solid #c9aa7a',
+                    borderRadius: 5, cursor: 'pointer',
+                    fontWeight: 700, lineHeight: 1,
+                  }}
+                >{emoji}</button>
+              ))}
+            </div>
+            <button
+              onClick={e => { e.stopPropagation(); if (onPlace) onPlace() }}
+              style={{
+                padding: '5px 10px', fontSize: 11, fontWeight: 800,
+                background: spectatorSide === 'boost'
+                  ? 'linear-gradient(135deg, #56b243, #3d8a30)'
+                  : 'linear-gradient(135deg, #e05555, #b03030)',
+                color: '#fff',
+                border: `2px solid ${spectatorSide === 'boost' ? '#3d8a30' : '#b03030'}`,
+                borderRadius: 5, cursor: 'pointer',
+                boxShadow: spectatorSide === 'boost'
+                  ? '0 2px 6px rgba(61,138,48,0.4)'
+                  : '0 2px 6px rgba(176,48,48,0.4)',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {spectatorSide === 'boost' ? '🚀' : '🪤'} Place
+            </button>
+            <button
+              onClick={e => { e.stopPropagation(); if (onSpectatorSpaceSelect) onSpectatorSpaceSelect('') }}
+              style={{
+                padding: '2px 8px', fontSize: 10, fontWeight: 700,
+                background: 'transparent', color: '#9a7a4a',
+                border: '1px solid #c9aa7a', borderRadius: 4, cursor: 'pointer',
+              }}
+            >Cancel</button>
+          </div>
+        )}
         <div style={{ fontSize: 11, fontWeight: 700, color: '#9a7a4a' }}>#{space.spaceNumber}</div>
         <div style={{ minHeight: 72, display: 'flex', flexDirection: 'column-reverse', gap: 4, marginTop: 6, alignItems: 'center' }}>
           {space.snails && space.snails.map((s) => {

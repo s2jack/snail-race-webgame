@@ -6,7 +6,19 @@ When no version tag exists yet, changes are listed under **Unreleased**.
 
 ---
 
-## [Unreleased] — 2026-03-02
+## [Unreleased] — 2026-03-03
+
+---
+
+## [0.4.0] — 2026-03-03
+
+### UI / Board
+- Board spaces now show hover highlight (gold tint + gold border + pointer cursor) **only** on spaces that are valid for spectator tile placement (passes `canPlaceSpectator` for the current player). Invalid spaces receive no hover interaction (`cursor: default`). Valid-space hover is only active when placement is allowed (`playing` phase, fewer than 5 dice used).
+- Removed `.board-space:hover` CSS rule from `styles.css` — it applied `!important` overrides to every space unconditionally, bypassing the React-controlled validity check. Hover effects now come exclusively from inline styles in `Board/index.jsx`.
+- Clicking a valid board space selects it (green tint + border) and shows an inline overlay with a 🚀/🪤 **boost/trap toggle**, a coloured **Place** button, and a **Cancel** button — eliminating the need to type a space number manually.
+- The `validSpectatorSpaces` set is memoised in `Board` (recomputes only when `track`, `phase`, `usedDice`, or `currentPlayer.id` change) to avoid calling `canPlaceSpectator` on every render.
+- `spaceInput`, `spectatorSide`, and `handleConfirmPlace` lifted to `App` so `Board` and `SpectatorTilePanel` share the same state. `Board` now accepts `selectedSpace`, `spectatorSide`, `onSideChange`, and `onPlace` props.
+- `SpectatorTilePanel` action button is now disabled (dimmed) until a space is selected on the board; when a space is selected it reveals a prominent green/red **"Place on #X"** button matching the chosen side.
 
 ### Bug Fix / Game Logic
 - Fixed crazy-snail carrier rule not being enforced during dice resolution. `useGameState.js` was using `die.crazyColor` directly instead of calling `resolveCrazySnailId()`. Now imports and calls `resolveCrazySnailId(state.track, die.crazyColor)` in the `ROLL_DIE` case, so that if exactly one crazy snail is carrying a non-crazy snail the carrier always moves regardless of which colour the grey die shows.
@@ -21,7 +33,7 @@ When no version tag exists yet, changes are listed under **Unreleased**.
 - Added `RESTART_GAME` reducer case in `useGameState.js` — returns a fresh copy of `initialState`, sending the app back to the `setup` phase.
 
 ### UI / EventLogWidget
-- Replaced button-based open/minimize with hover-to-expand behaviour. The widget shows a compact title tab at all times and expands to the full scrollable log on mouse-enter; collapses again on mouse-leave. "Open" and "Minimize" buttons removed.
+- Replaced button-based open/minimize with hover-to-expand behaviour. The widget shows a compact title tab at all times and expands to the full scrollable log on mouse-enter; collapses again on mouse-leave.
 
 ---
 

@@ -8,7 +8,24 @@ import Lobby from './components/Lobby'
 import { useGameContext } from './context/GameContext'
 
 export default function App() {
-  const { state } = useGameContext()
+  const { state, dispatch } = useGameContext()
+  const [spectatorSpace, setSpectatorSpace] = useState('')
+  const [spectatorSide, setSpectatorSide] = useState('boost')
+
+  const currentPlayer = state.players && state.players[state.currentPlayerIndex]
+  const canPlaceNow = state.phase === 'playing' && (state.usedDice || []).length < 5
+
+  function handleConfirmPlace() {
+    if (!canPlaceNow || !spectatorSpace || !currentPlayer) return
+    const pos = parseInt(spectatorSpace, 10)
+    if (!pos || Number.isNaN(pos)) return
+    const tile = currentPlayer.spectatorTile
+    // No-op guard: same space + same side means nothing changed
+    if (tile?.onBoard && tile.position === pos && tile.side === spectatorSide) return
+    const move = !!(tile?.onBoard && tile.position !== pos)
+    dispatch({ type: 'PLACE_SPECTATOR', playerId: currentPlayer.id, spaceNumber: pos, side: spectatorSide, move })
+    setSpectatorSpace('')
+  }
 
   return (
     <div className="app-root">
@@ -37,7 +54,13 @@ export default function App() {
             </div>
             <div className="section-divider" />
             <div style={{ flexShrink: 0, minWidth: 180 }}>
-              <SpectatorTilePanel />
+              <SpectatorTilePanel
+                spaceInput={spectatorSpace}
+                setSpaceInput={setSpectatorSpace}
+                side={spectatorSide}
+                setSide={setSpectatorSide}
+                onApply={handleConfirmPlace}
+              />
             </div>
             <div className="section-divider" />
             <div style={{ flexShrink: 0 }}>
@@ -51,7 +74,13 @@ export default function App() {
 
           {/* Board */}
           <div className="game-card game-area" style={{ display: 'block' }}>
-            <Board />
+            <Board
+              onSpectatorSpaceSelect={setSpectatorSpace}
+              selectedSpace={spectatorSpace}
+              spectatorSide={spectatorSide}
+              onSideChange={setSpectatorSide}
+              onPlace={handleConfirmPlace}
+            />
           </div>
 
           {/* Leg / Race / Ended overlay modals */}
@@ -114,10 +143,8 @@ function HelpTip({ text }) {
   )
 }
 
-function SpectatorTilePanel() {
-  const { state, dispatch } = useGameContext()
-  const [spaceInput, setSpaceInput] = React.useState('')
-  const [side, setSide] = React.useState('boost')
+function SpectatorTilePanel({ spaceInput, setSpaceInput, side, setSide, onApply }) {
+  const { state } = useGameContext()
 
   const currentPlayer = state.players && state.players[state.currentPlayerIndex]
   if (!currentPlayer) return null
@@ -125,20 +152,6 @@ function SpectatorTilePanel() {
   const totalUsedCount = (state.usedDice || []).length
   const canPlace = state.phase === 'playing' && totalUsedCount < 5
   const tile = currentPlayer.spectatorTile
-
-  // Single action: place fresh, or move to a new space, or flip side — all in one.
-  // If tile is on board and no new space is entered, keeps current position (flip/re-apply).
-  function applyTile() {
-    if (!canPlace) return
-    const pos = spaceInput ? parseInt(spaceInput, 10) : tile?.position
-    if (!pos || Number.isNaN(pos)) return
-    // Guard: if nothing actually changed (same space, same side) don't dispatch — it would
-    // end the turn without the player doing anything meaningful.
-    if (tile?.onBoard && tile.position === pos && tile.side === side) return
-    const move = !!(tile?.onBoard && tile.position !== pos)
-    dispatch({ type: 'PLACE_SPECTATOR', playerId: currentPlayer.id, spaceNumber: pos, side, move })
-    setSpaceInput('')
-  }
 
   const inputSt = {
     padding: '5px 8px',
@@ -200,20 +213,34 @@ You can place, move, or flip your tile once per turn (before rolling). Chain rea
           </select>
         </div>
 
-        {/* Single action button: Place / Move / Flip all in one */}
-        <button
-          onClick={applyTile}
-          disabled={!canPlace}
-          style={{
-            padding: '7px 10px', fontSize: 11, fontWeight: 700,
-            background: canPlace ? '#b98a49' : '#d0bfa0',
-            color: '#fff',
-            border: `2px solid ${canPlace ? '#7a5a2a' : '#bfae8a'}`,
-            borderRadius: 6,
-            cursor: canPlace ? 'pointer' : 'not-allowed',
-            width: '100%',
-          }}
-        >{tile?.onBoard ? 'Update Tile' : 'Place Tile'}</button>
+        {/* Confirm button — revealed only when a space has been selected */}
+        {spaceInput && canPlace ? (
+          <button
+            onClick={onApply}
+            style={{
+              padding: '9px 10px', fontSize: 12, fontWeight: 800,
+              background: 'linear-gradient(135deg, #56b243, #3d8a30)',
+              color: '#fff',
+              border: '2px solid #3d8a30',
+              borderRadius: 6,
+              cursor: 'pointer',
+              width: '100%',
+              boxShadow: '0 2px 8px rgba(61,138,48,0.35)',
+            }}
+          >
+            {side === 'boost' ? '🚀' : '🪤'} Place on #{spaceInput}
+          </button>
+        ) : (
+          <button
+            disabled
+            style={{
+              padding: '7px 10px', fontSize: 11, fontWeight: 700,
+              background: '#d0bfa0', color: '#bfae8a',
+              border: '2px solid #bfae8a',
+              borderRadius: 6, cursor: 'not-allowed', width: '100%',
+            }}
+          >{tile?.onBoard ? 'Update Tile' : 'Place Tile'}</button>
+        )}
       </div>
     </div>
   )
