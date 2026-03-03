@@ -6,7 +6,30 @@ When no version tag exists yet, changes are listed under **Unreleased**.
 
 ---
 
-## [Unreleased] — 2026-03-03
+## [Unreleased] — 2026-03-04
+
+---
+
+## [0.5.0] — 2026-03-03
+
+### UI / Mobile
+- Added horizontal swipe gesture to navigate between Board, Play, and My Card tabs on mobile.
+- All three tab panels are now rendered simultaneously in a side-by-side track (`width: 100vw * 3`) that slides with a `translateX` CSS transform — enabling smooth hardware-accelerated transitions.
+- Swipe axis is determined after 8 px of movement: if the gesture is primarily horizontal it becomes a tab swipe; if primarily vertical, natural scroll is preserved (prevents conflict with the board's internal horizontal scroll and the panels' vertical scroll).
+- Real-time drag offset (`liveOffset`) moves the track in sync with the finger during the swipe, snapping to the target tab on `touchEnd` with a `cubic-bezier(0.25, 1, 0.5, 1)` spring transition.
+- Edge resistance: dragging past the first or last tab damps to 25% motion to hint there's nothing further.
+- Commit threshold is 55 px — short accidental brushes don't trigger a tab change.
+- Each slot div owns its own `overflow-y: auto` with independent vertical scroll; clipping shell uses `overflow: hidden`.
+- Added full mobile portrait layout for screens ≤ 767 px wide — triggers a three-tab bottom-navigation shell instead of the desktop layout.
+- **Tab 1 – Board**: shows the track (horizontally scrollable), Snail Standings, Turn Order, and a collapsible Event Log.
+- **Tab 2 – Play**: shows Dice Tower, Betting Panel, and Spectator Tile panel stacked vertically.
+- **Tab 3 – My Card**: shows the current player's coins and leg bets as an inline panel (no slide-in behavior).
+- Added a sticky mobile header displaying the game title, current-player name badge, and remaining dice count.
+- Applied the grass/garden background image (`/background/background.png`) to the page body on mobile via a CSS `@media (max-width: 767px)` rule; cards become semi-transparent (`rgba(255,248,238,0.94)`) with `backdrop-filter: blur` so the background shows through.
+- Added mobile Lobby layout: setup phase on mobile uses a simple scrollable page with the same background.
+- `PlayerCard` now accepts a `mobileMode` boolean prop — when true the hover/slide-in mechanism is disabled and the component renders as an inline element, not a fixed-position panel.
+- Mobile CSS classes added: `.mobile-header`, `.mobile-content`, `.mobile-tab-bar`, `.mobile-tab-btn`, `.mobile-board-scroll`.
+- Desktop layout is entirely unaffected.
 
 ---
 

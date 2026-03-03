@@ -101,7 +101,7 @@ const inputSt = (disabled) => ({
   outline: 'none',
 })
 
-export function PlayerCard() {
+export function PlayerCard({ mobileMode = false }) {
   const { state, dispatch } = useGameContext()
   const currentPlayer = state.players && state.players[state.currentPlayerIndex]
   const [isOpen, setIsOpen] = useState(true)
@@ -111,12 +111,12 @@ export function PlayerCard() {
 
   useEffect(() => { rollClickRef.current = false }, [state.phase, state.usedDice])
 
-  // Hover-to-open: open when mouse enters the 20px right-edge zone;
-  // close when mouse moves beyond the open panel width (380px) to the left.
+  // Hover-to-open: only active on desktop (not mobileMode)
   const isOpenRef = useRef(isOpen)
   useEffect(() => { isOpenRef.current = isOpen }, [isOpen])
 
   useEffect(() => {
+    if (mobileMode) return   // no hover behaviour on mobile
     const PANEL_WIDTH = 380
     const TRIGGER_ZONE = 20
     function handleMouseMove(e) {
@@ -129,7 +129,7 @@ export function PlayerCard() {
     }
     document.addEventListener('mousemove', handleMouseMove)
     return () => document.removeEventListener('mousemove', handleMouseMove)
-  }, [])
+  }, [mobileMode])
 
   function handleRoll() {
     if (!currentPlayer || rollClickRef.current) return
@@ -151,6 +151,73 @@ export function PlayerCard() {
 
   const whiteText = (color) => !['white', 'yellow'].includes(color)
 
+  // ── Mobile inline render ────────────────────────────────────────────────
+  if (mobileMode) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+        {/* Header */}
+        <div style={{
+          padding: '10px 0 12px',
+          borderBottom: `2px solid ${C.gold}`,
+          background: `linear-gradient(135deg, #f5e8cc 0%, #fff8ee 100%)`,
+          display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14,
+        }}>
+          <span style={{ fontSize: 22 }}>🐌</span>
+          <div>
+            <div style={{ fontSize: 16, fontWeight: 800, color: C.brown, lineHeight: 1.1 }}>
+              {currentPlayer.name || currentPlayer.id}
+            </div>
+            <div style={{ fontSize: 11, color: C.textMuted, fontWeight: 600 }}>Current Player</div>
+          </div>
+        </div>
+
+        {/* Content (same sections as desktop, no scroll container needed) */}
+        {/* ── Coins ── */}
+        <div style={{ ...sec }}>
+          <div style={secTitle}>Coins</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+              width: 46, height: 46, borderRadius: '50%',
+              background: 'linear-gradient(135deg, #ffd700, #f59e0b)',
+              border: `3px solid `,
+              fontWeight: 900, fontSize: 20, color: '#5a3e1b',
+              boxShadow: '0 2px 8px rgba(180,130,0,0.3)',
+            }}>
+              {currentPlayer.coins}
+            </div>
+            <span style={{ fontSize: 13, color: C.textMuted }}>available</span>
+          </div>
+        </div>
+
+        {/* ── Leg Bets ── */}
+        <div style={{ ...sec }}>
+          <div style={secTitle}>Leg Bets</div>
+          {(currentPlayer.legBetTiles || []).length > 0 ? (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {(currentPlayer.legBetTiles || []).map((bet, idx) => (
+                <span key={idx} style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 5,
+                  padding: '5px 10px', borderRadius: 20,
+                  background: colorDot(bet.color),
+                  color: whiteText(bet.color) ? '#fff' : '#333',
+                  fontSize: 12, fontWeight: 700,
+                  border: '2px solid rgba(0,0,0,0.15)',
+                  boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
+                }}>
+                  {bet.color} <span style={{ opacity: 0.85 }}>({bet.value} coins)</span>
+                </span>
+              ))}
+            </div>
+          ) : (
+            <div style={{ fontSize: 12, color: C.textMuted, fontStyle: 'italic' }}>No leg bets placed</div>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  // ── Desktop slide-in panel render ───────────────────────────────────────
   return (
     <>
       {/* Toggle tab */}
