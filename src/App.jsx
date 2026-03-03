@@ -102,7 +102,13 @@ export default function App() {
     // Setup / Lobby on mobile — full-screen parchment scroll card
     if (state.phase === 'setup') {
       return (
-        <div style={{ minHeight: '100dvh', overflowY: 'auto' }}>
+        <div style={{
+          minHeight: '100dvh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          overflowY: 'auto',
+        }}>
           <Lobby />
         </div>
       )

@@ -71,6 +71,7 @@ export function Lobby() {
       justifyContent: 'center',
       padding: '12px',
       boxSizing: 'border-box',
+      width: '100%',
     }}>
       {/*
         Panel shell — background image IS the entire visual chrome (frame,
