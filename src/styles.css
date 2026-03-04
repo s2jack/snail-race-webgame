@@ -7,7 +7,25 @@
 body {
   font-family: system-ui, 'Segoe UI', Roboto, Arial;
   overflow-x: hidden;
-  background-color: #f0e8d8;
+  background-color: #3a6b35;  /* fallback while image loads */
+}
+
+/* ─── Desktop background (≥ 768 px) ─────────────────────────────────────── */
+@media (min-width: 768px) {
+  body {
+    background-image: url('/background/background-landscape.png');
+    background-size: cover;
+    background-position: center center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+  }
+
+  /* Semi-transparent warm parchment cards on top of the grass background */
+  .game-card {
+    background: rgba(255, 248, 238, 0.93);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
 }
 
 .app-root {

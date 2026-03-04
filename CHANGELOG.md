@@ -6,6 +6,13 @@ When no version tag exists yet, changes are listed under **Unreleased**.
 
 ---
 
+## [Unreleased] — 2026-03-04
+
+### UI / Background
+- Applied `background-landscape.png` as a full-cover fixed background for desktop (≥768 px) on both the Lobby and Game pages via a `@media (min-width: 768px)` rule on `body`.
+- Updated `.game-card` on desktop to use `rgba(255,248,238,0.93)` with `backdrop-filter: blur(4px)` so cards remain readable against the grass background.
+- Changed desktop `body` fallback colour from `#f0e8d8` to `#3a6b35` to match the green background while the image loads.
+
 ## [Unreleased] — 2026-03-03
 
 ### PWA Setup
