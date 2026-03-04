@@ -4,6 +4,63 @@ import { useLocalPlayer } from '../../context/LocalPlayerContext'
 
 const SNAIL_HEX = { red: '#e53935', blue: '#1e88e5', green: '#43a047', yellow: '#fdd835', purple: '#8e24aa' }
 
+// Standard dice pip positions on a 3×3 grid (row 1–3, col 1–3).
+// Each entry is [row, col] — cells without a pip are left empty.
+const PIP_POSITIONS = {
+  1: [[2,2]],
+  2: [[1,3],[3,1]],
+  3: [[1,3],[2,2],[3,1]],
+  4: [[1,1],[1,3],[3,1],[3,3]],
+  5: [[1,1],[1,3],[2,2],[3,1],[3,3]],
+  6: [[1,1],[1,3],[2,1],[2,3],[3,1],[3,3]],
+}
+
+/** Renders a single coloured die face with proper pips instead of a text label. */
+function DieFace({ value, bg, pipColor, size = 44 }) {
+  const pips = PIP_POSITIONS[value] || []
+  // Build a Set for O(1) lookup: "r,c"
+  const pipSet = new Set(pips.map(([r, c]) => `${r},${c}`))
+  const pad = Math.round(size * 0.14)
+  const pipSize = Math.round(size * 0.18)
+
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: Math.round(size * 0.18),
+      background: bg,
+      border: '2px solid rgba(0,0,0,0.22)',
+      boxShadow: '0 2px 6px rgba(0,0,0,0.22)',
+      flexShrink: 0,
+      padding: pad,
+      boxSizing: 'border-box',
+      display: 'grid',
+      gridTemplateColumns: 'repeat(3, 1fr)',
+      gridTemplateRows: 'repeat(3, 1fr)',
+      gap: 0,
+    }}>
+      {[1,2,3].flatMap(row =>
+        [1,2,3].map(col => {
+          const hasPip = pipSet.has(`${row},${col}`)
+          return (
+            <div key={`${row}-${col}`} style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              {hasPip && (
+                <div style={{
+                  width: pipSize, height: pipSize,
+                  borderRadius: '50%',
+                  background: pipColor,
+                  boxShadow: `0 1px 2px rgba(0,0,0,0.3)`,
+                  flexShrink: 0,
+                }} />
+              )}
+            </div>
+          )
+        })
+      )}
+    </div>
+  )
+}
+
 export function DiceTower() {
   const { state, dispatch } = useGameContext()
   const { localPlayerId } = useLocalPlayer() || {}
@@ -39,22 +96,17 @@ export function DiceTower() {
             const bg = d.type === 'color'
               ? (SNAIL_HEX[d.color] || d.color)
               : (d.crazyColor === 'white' ? '#eee' : '#222')
-            const fg = d.type === 'color'
-              ? (d.color === 'yellow' ? '#5a3e1b' : '#fff')
-              : (d.crazyColor === 'white' ? '#000' : '#fff')
-            const label = d.type === 'color'
-              ? `${d.color[0].toUpperCase()}${d.value}`
-              : `${d.crazyColor[0].toUpperCase()}${d.value}`
+            const pipColor = d.type === 'color'
+              ? '#fff'
+              : (d.crazyColor === 'white' ? '#333' : '#fff')
             return (
-              <div key={i} className="die-badge" title={JSON.stringify(d)} style={{
-                width: 44, height: 44, borderRadius: 8,
-                background: bg, color: fg,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontWeight: 800, fontSize: 13,
-                border: '2px solid rgba(0,0,0,0.22)',
-                boxShadow: '0 2px 6px rgba(0,0,0,0.22)',
-                flexShrink: 0,
-              }}>{label}</div>
+              <DieFace
+                key={i}
+                value={d.value}
+                bg={bg}
+                pipColor={pipColor}
+                size={44}
+              />
             )
           }
           // Empty placeholder slot
