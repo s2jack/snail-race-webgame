@@ -208,47 +208,74 @@ export default function App() {
   }
 
   // ── Desktop layout ───────────────────────────────────────────────────
-  return (
-    <div className="app-root">
-      <h1 className="app-title">🐌 Snail Race</h1>
-      {state.phase === 'setup' ? (
+  // Setup / Lobby on desktop — keep original centred parchment look
+  if (state.phase === 'setup') {
+    return (
+      <div className="app-root">
+        <h1 className="app-title">🐌 Snail Race</h1>
         <Lobby />
-      ) : (
-        <>
-          {/* Player Info Card - slides in from right */}
-          <PlayerCard />
+      </div>
+    )
+  }
 
-          {/* Top bar: Dice Tower + Betting Panel + Turn Order + Snail Standings */}
-          <div className="game-card" style={{
-            display: 'flex',
-            gap: 16,
-            alignItems: 'flex-start',
-            marginBottom: 16,
-            flexWrap: 'wrap',
-          }}>
-            <div style={{ flexShrink: 0 }}>
-              <DiceTower />
-            </div>
-            <div className="section-divider" />
-            <div style={{ flex: 1, minWidth: 260 }}>
-              <BettingPanel />
-            </div>
-            <div className="section-divider" />
-            <div style={{ flexShrink: 0, minWidth: 180 }}>
-              <SpectatorTilePanel {...spectatorProps} />
-            </div>
-            <div className="section-divider" />
-            <div style={{ flexShrink: 0 }}>
-              <TurnOrder />
-            </div>
-            <div className="section-divider" />
-            <div style={{ flexShrink: 0 }}>
-              <SnailStandings />
-            </div>
-          </div>
+  // ── 3-column game layout (≥ 768px) ───────────────────────────────────
+  return (
+    <div style={{
+      display: 'flex',
+      height: '100vh',
+      overflow: 'hidden',
+      maxWidth: '100vw',
+    }}>
 
-          {/* Board */}
-          <div className="game-card game-area" style={{ display: 'block' }}>
+      {/* ── LEFT COLUMN — Dice · Spectator Tile · Player Card ────────── */}
+      <div style={{
+        width: 250,
+        flexShrink: 0,
+        overflowY: 'auto',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 10,
+        padding: '12px 8px 12px 12px',
+      }}>
+        {/* Title */}
+        <h1 className="app-title" style={{ margin: '0 0 2px', fontSize: 22, lineHeight: 1.2 }}>
+          🐌 Snail Race
+        </h1>
+
+        {/* Dice Tower */}
+        <div className="game-card" style={{ padding: '12px 14px', flexShrink: 0 }}>
+          <DiceTower />
+        </div>
+
+        {/* Spectator Tile */}
+        <div className="game-card" style={{ padding: '12px 14px', flexShrink: 0 }}>
+          <SpectatorTilePanel {...spectatorProps} />
+        </div>
+
+        {/* Current Player Card — fills the rest of the column */}
+        <div className="game-card" style={{ padding: '12px 14px', flex: 1 }}>
+          <PlayerCard inlineMode />
+        </div>
+      </div>
+
+      {/* ── CENTER COLUMN — Board ────────────────────────────────────── */}
+      <div style={{
+        flex: 1,
+        minWidth: 0,
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+        padding: '12px 8px',
+      }}>
+        <div className="game-card" style={{
+          flex: 1,
+          overflow: 'hidden',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '10px',
+        }}>
+          <div style={{ width: '100%' }}>
             <Board
               onSpectatorSpaceSelect={setSpectatorSpace}
               selectedSpace={spectatorSpace}
@@ -257,14 +284,38 @@ export default function App() {
               onPlace={handleConfirmPlace}
             />
           </div>
+        </div>
+      </div>
 
-          {/* Leg / Race / Ended overlay modals */}
-          <Scoreboard />
+      {/* ── RIGHT COLUMN — Bets · Turn Order · Standings ─────────────── */}
+      <div style={{
+        width: 250,
+        flexShrink: 0,
+        overflowY: 'auto',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 10,
+        padding: '12px 12px 12px 8px',
+      }}>
+        {/* Leg Bet Stacks + Race Bets */}
+        <div className="game-card" style={{ padding: '12px 14px', flexShrink: 0 }}>
+          <BettingPanel />
+        </div>
 
-          {/* Event Log panel - fixed at bottom left, pinned to viewport */}
-          <EventLogWidget eventLog={state.eventLog || []} />
-        </>
-      )}
+        {/* Turn Order */}
+        <div className="game-card" style={{ padding: '12px 14px', flexShrink: 0 }}>
+          <TurnOrder />
+        </div>
+
+        {/* Standings */}
+        <div className="game-card" style={{ padding: '12px 14px', flex: 1 }}>
+          <SnailStandings />
+        </div>
+      </div>
+
+      {/* Overlays — always mounted, z-indexed above columns */}
+      <Scoreboard />
+      <EventLogWidget eventLog={state.eventLog || []} />
     </div>
   )
 }

@@ -32,7 +32,7 @@ body {
   max-width: 1280px;
   margin: 0 auto;
   padding: 16px;
-  padding-right: 0;
+  /* padding-right restored: the fixed 380px PlayerCard panel no longer exists on desktop */
 }
 
 .app-title {
@@ -78,7 +78,7 @@ body {
 @media (max-width: 1024px) {
   .app-root {
     padding-left: 8px;
-    padding-right: 0;
+    padding-right: 8px;
   }
 }
 

@@ -8,6 +8,32 @@ When no version tag exists yet, changes are listed under **Unreleased**.
 
 ## [Unreleased] — 2026-03-04
 
+### UI / Layout — Desktop 3-Column Redesign
+- Replaced the old top-bar + grid-board desktop layout with a full-viewport 3-column flex layout activated at ≥768 px; mobile swipe layout is completely untouched.
+- **Left column (250 px):** contains the title, DiceTower card, SpectatorTile card, and PlayerCard (inline mode) stacked vertically with independent scroll.
+- **Center column (flex 1):** contains a single `.game-card` wrapper that holds the Board, which now scales with the available space.
+- **Right column (250 px):** contains BettingPanel, TurnOrder, and SnailStandings as separate cards.
+- Lobby (setup phase) still uses the original `.app-root` centred layout, unchanged.
+- Removed the fixed slide-in `PlayerCard` panel from the desktop game view (the `←/→` toggle) as player info now lives inline in the left column.
+
+### UI / Board — Oval Horseshoe Layout
+- Replaced the 2-row CSS grid (`repeat(8,1fr)`) with an absolute-position oval/horseshoe layout.
+- Added `SPACE_COORDS` constant (16 entries of `{x,y}` percentages) placing spaces #1–#16 around a CCW horseshoe: #1 bottom-right (start) → up the right leg → across the top arc → down the left leg → #16 bottom-left (near finish).
+- Container uses a `paddingTop: '65%'` aspect-ratio trick so the board scales proportionally with the center column width.
+- All existing snail hop/spectator-bounce animation logic, `displayTrack` derivation, and `renderSpace` content are preserved exactly — only the spatial layout changed.
+- `SPACE_COORDS` values are clearly documented as tuning targets for when stone-tile PNG assets arrive; a `bgSrc` prop hook is noted in the component comment.
+
+### UI / PlayerCard — Inline Mode
+- Added `inlineMode` boolean prop (default `false`) to `PlayerCard`.
+- When `inlineMode` is true, renders player info (name header, coins, leg bets, race bets, spectator tile status) as a plain inline `div` in document flow — no fixed panel, no toggle button, no `mousemove` listener.
+- Existing `mobileMode` prop path and legacy slide-in panel are both preserved for backward compatibility.
+
+### UI / styles.css
+- Removed `padding-right: 0` from `.app-root` (was added to compensate for the 380 px fixed PlayerCard panel, which no longer exists on desktop).
+- Updated `@media (max-width: 1024px)` `.app-root` override: restored `padding-right: 8px` (was `0`).
+
+## [Unreleased] — 2026-03-04
+
 ### UI / DiceTower
 - Replaced text labels (e.g. "G3", "B2") on rolled dice with proper pip dot layouts matching a real physical die (values 1–6 rendered on a 3×3 grid).
 - Added `DieFace` component with correct standard pip positions for all 6 values; pip colour is white on all dice except yellow (dark brown) and crazy-white (dark grey) for contrast.

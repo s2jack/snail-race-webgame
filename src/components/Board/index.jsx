@@ -21,6 +21,31 @@ const INITIAL_DELAY_MS = 200
 const HOP_DURATION_MS  = 320
 const STEP_DELAY_MS    = 360
 
+/* ─── Oval / horseshoe space coordinates ───────────────────────────────────
+ *  Each entry: { x, y } as percentage of the container (0 = top/left edge).
+ *  The horseshoe runs CCW: #1 (bottom-right start) → up the right leg →
+ *  top arc → down the left leg → #16 (bottom-left, near finish).
+ *  Adjust these values once stone-tile PNG assets arrive.
+ * ─────────────────────────────────────────────────────────────────────────── */
+const SPACE_COORDS = {
+   1: { x: 88, y: 80 },
+   2: { x: 87, y: 60 },
+   3: { x: 83, y: 40 },
+   4: { x: 74, y: 22 },
+   5: { x: 62, y: 12 },
+   6: { x: 50, y:  9 },
+   7: { x: 38, y: 12 },
+   8: { x: 26, y: 22 },
+   9: { x: 17, y: 40 },
+  10: { x: 13, y: 60 },
+  11: { x: 12, y: 80 },
+  12: { x: 18, y: 89 },
+  13: { x: 31, y: 91 },
+  14: { x: 46, y: 91 },
+  15: { x: 61, y: 91 },
+  16: { x: 74, y: 89 },
+}
+
 export function Board({ onSpectatorSpaceSelect, selectedSpace, spectatorSide, onSideChange, onPlace }) {
   const { state } = useGameContext()
 
@@ -109,10 +134,6 @@ export function Board({ onSpectatorSpaceSelect, selectedSpace, spectatorSide, on
 
     return display
   }, [state.track, animState])
-
-  /* ── Snake layout: row 1 = #1–#8 (L→R), row 2 = #16–#9 (L→R) ───── */
-  const rowTop    = displayTrack.slice(0, 8)
-  const rowBottom = displayTrack.slice(8, 16).reverse()
 
   /* ── valid spaces for spectator tile placement ───────────────────────── */
   const currentPlayer = state.players && state.players[state.currentPlayerIndex]
@@ -284,15 +305,31 @@ export function Board({ onSpectatorSpaceSelect, selectedSpace, spectatorSide, on
   }
 
   return (
-    <div>
-      <p className="game-card-title" style={{ margin: '0 0 12px 0' }}>🏁 Track</p>
-      {/* Row 1: #1 → #8, left to right */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: 6, marginBottom: 6 }}>
-        {rowTop.map(renderSpace)}
-      </div>
-      {/* Row 2: #16 → #9, left to right (snake direction) */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: 6 }}>
-        {rowBottom.map(renderSpace)}
+    /* ── Oval horseshoe board ─────────────────────────────────────────────
+     *  paddingTop trick creates a 100% × 65%-of-width aspect-ratio container.
+     *  Each space tile is centred on its SPACE_COORDS percentage coordinate.
+     *  A bgSrc prop can be added here later to show a stone-track background.
+     * ────────────────────────────────────────────────────────────────────── */
+    <div style={{ position: 'relative', width: '100%', paddingTop: '65%' }}>
+      <div style={{ position: 'absolute', inset: 0 }}>
+        {displayTrack.map(space => {
+          const coord = SPACE_COORDS[space.spaceNumber]
+          if (!coord) return null
+          return (
+            <div
+              key={space.spaceNumber}
+              style={{
+                position: 'absolute',
+                left: `${coord.x}%`,
+                top: `${coord.y}%`,
+                transform: 'translate(-50%, -50%)',
+                width: 76,
+              }}
+            >
+              {renderSpace(space)}
+            </div>
+          )
+        })}
       </div>
     </div>
   )

@@ -101,7 +101,7 @@ const inputSt = (disabled) => ({
   outline: 'none',
 })
 
-export function PlayerCard({ mobileMode = false }) {
+export function PlayerCard({ mobileMode = false, inlineMode = false }) {
   const { state, dispatch } = useGameContext()
   const currentPlayer = state.players && state.players[state.currentPlayerIndex]
   const [isOpen, setIsOpen] = useState(true)
@@ -117,6 +117,7 @@ export function PlayerCard({ mobileMode = false }) {
 
   useEffect(() => {
     if (mobileMode) return   // no hover behaviour on mobile
+    if (inlineMode) return   // no hover behaviour when embedded inline
     const PANEL_WIDTH = 380
     const TRIGGER_ZONE = 20
     function handleMouseMove(e) {
@@ -217,7 +218,109 @@ export function PlayerCard({ mobileMode = false }) {
     )
   }
 
-  // ── Desktop slide-in panel render ───────────────────────────────────────
+  // ── Inline mode (embedded in a column, no fixed panel) ─────────────────
+  if (inlineMode) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+        {/* Header */}
+        <div style={{
+          padding: '0 0 12px',
+          borderBottom: `2px solid ${C.gold}`,
+          background: `linear-gradient(135deg, #f5e8cc 0%, #fff8ee 100%)`,
+          display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14,
+        }}>
+          <span style={{ fontSize: 20 }}>🐌</span>
+          <div>
+            <div style={{ fontSize: 15, fontWeight: 800, color: C.brown, lineHeight: 1.1 }}>
+              {currentPlayer.name || currentPlayer.id}
+            </div>
+            <div style={{ fontSize: 10, color: C.textMuted, fontWeight: 600 }}>Current Player</div>
+          </div>
+        </div>
+
+        {/* Coins */}
+        <div style={{ ...sec }}>
+          <div style={secTitle}>Coins</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+              width: 42, height: 42, borderRadius: '50%',
+              background: 'linear-gradient(135deg, #ffd700, #f59e0b)',
+              border: `3px solid ${C.gold}`,
+              fontWeight: 900, fontSize: 18, color: '#5a3e1b',
+              boxShadow: '0 2px 8px rgba(180,130,0,0.3)',
+            }}>
+              {currentPlayer.coins}
+            </div>
+            <span style={{ fontSize: 12, color: C.textMuted }}>available</span>
+          </div>
+        </div>
+
+        {/* Leg Bets */}
+        <div style={{ ...sec }}>
+          <div style={secTitle}>Leg Bets</div>
+          {(currentPlayer.legBetTiles || []).length > 0 ? (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+              {(currentPlayer.legBetTiles || []).map((bet, idx) => (
+                <span key={idx} style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 4,
+                  padding: '4px 9px', borderRadius: 20,
+                  background: colorDot(bet.color),
+                  color: whiteText(bet.color) ? '#fff' : '#333',
+                  fontSize: 11, fontWeight: 700,
+                  border: '2px solid rgba(0,0,0,0.15)',
+                  boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
+                }}>
+                  {bet.color} <span style={{ opacity: 0.85 }}>({bet.value})</span>
+                </span>
+              ))}
+            </div>
+          ) : (
+            <div style={{ fontSize: 11, color: C.textMuted, fontStyle: 'italic' }}>No leg bets placed</div>
+          )}
+        </div>
+
+        {/* Race Bets — cards still in hand */}
+        {(currentPlayer.raceBetCardsInHand || []).length > 0 && (
+          <div style={{ ...sec }}>
+            <div style={secTitle}>Race Bet Cards</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+              {(currentPlayer.raceBetCardsInHand || []).map((color, idx) => (
+                <span key={idx} style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 4,
+                  padding: '4px 9px', borderRadius: 20,
+                  background: colorDot(color),
+                  color: whiteText(color) ? '#fff' : '#333',
+                  fontSize: 11, fontWeight: 700,
+                  border: '2px solid rgba(0,0,0,0.15)',
+                  boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
+                }}>
+                  {color}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Spectator tile status */}
+        {currentPlayer.spectatorTile?.onBoard && (
+          <div style={{ ...sec, marginBottom: 0, paddingBottom: 0, borderBottom: 'none' }}>
+            <div style={secTitle}>Spectator Tile</div>
+            <span style={{
+              padding: '3px 9px', borderRadius: 20, fontSize: 11, fontWeight: 700,
+              background: currentPlayer.spectatorTile.side === 'boost' ? '#d4f0d0' : '#f9d8d8',
+              border: `1px solid ${currentPlayer.spectatorTile.side === 'boost' ? '#7bc97a' : '#e08080'}`,
+              color: currentPlayer.spectatorTile.side === 'boost' ? '#3a7a30' : '#a03030',
+            }}>
+              {currentPlayer.spectatorTile.side === 'boost' ? '🚀 Boost' : '🨤 Trap'} @ #{currentPlayer.spectatorTile.position}
+            </span>
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // ── Legacy desktop slide-in panel render ───────────────────────────────
   return (
     <>
       {/* Toggle tab */}
