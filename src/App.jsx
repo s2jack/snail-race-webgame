@@ -123,7 +123,6 @@ export default function App() {
       <div className="app-root">
         {/* Sticky header */}
         <div className="mobile-header">
-          <h1 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: '#5a3e1b' }}>🐌 Snail Race</h1>
           <MobileHeaderInfo />
         </div>
 
@@ -212,7 +211,6 @@ export default function App() {
   if (state.phase === 'setup') {
     return (
       <div className="app-root">
-        <h1 className="app-title">🐌 Snail Race</h1>
         <Lobby />
       </div>
     )
@@ -238,9 +236,6 @@ export default function App() {
         padding: '12px 8px 12px 12px',
       }}>
         {/* Title */}
-        <h1 className="app-title" style={{ margin: '0 0 2px', fontSize: 22, lineHeight: 1.2 }}>
-          🐌 Snail Race
-        </h1>
 
         {/* Dice Tower */}
         <div className="game-card" style={{ padding: '12px 14px', flexShrink: 0 }}>

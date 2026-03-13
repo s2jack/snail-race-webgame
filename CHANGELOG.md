@@ -6,7 +6,15 @@ When no version tag exists yet, changes are listed under **Unreleased**.
 
 ---
 
-## [Unreleased] — 2026-03-04
+## [Unreleased] — 2026-03-13
+
+## [0.7.0] — 2026-03-13
+
+### UI / Board — S-Curve Snake Path Layout
+- Replaced `SPACE_COORDS` oval horseshoe layout with a 5-segment S-curve / snake path matching the stone-tile image reference.
+- Segments: A #1–#5 top row L→R · B #6–#7 right side down · C #8–#12 middle row R→L · D #13–#14 left side down · E #15–#16 bottom row L→R.
+- Increased board container `paddingTop` from `65%` to `95%` to accommodate the taller vertical shape.
+- Updated `shouldMirror` snail-facing logic: snails face right on segs A/B/E and left (mirrored) on segs C/D; crazy snails flip the rule as they travel in reverse.
 
 ### UI / Layout — Desktop 3-Column Redesign
 - Replaced the old top-bar + grid-board desktop layout with a full-viewport 3-column flex layout activated at ≥768 px; mobile swipe layout is completely untouched.
@@ -32,8 +40,6 @@ When no version tag exists yet, changes are listed under **Unreleased**.
 - Removed `padding-right: 0` from `.app-root` (was added to compensate for the 380 px fixed PlayerCard panel, which no longer exists on desktop).
 - Updated `@media (max-width: 1024px)` `.app-root` override: restored `padding-right: 8px` (was `0`).
 
-## [Unreleased] — 2026-03-04
-
 ### UI / DiceTower
 - Replaced text labels (e.g. "G3", "B2") on rolled dice with proper pip dot layouts matching a real physical die (values 1–6 rendered on a 3×3 grid).
 - Added `DieFace` component with correct standard pip positions for all 6 values; pip colour is white on all dice except yellow (dark brown) and crazy-white (dark grey) for contrast.
@@ -43,8 +49,6 @@ When no version tag exists yet, changes are listed under **Unreleased**.
 - Applied `background-landscape.png` as a full-cover fixed background for desktop (≥768 px) on both the Lobby and Game pages via a `@media (min-width: 768px)` rule on `body`.
 - Updated `.game-card` on desktop to use `rgba(255,248,238,0.93)` with `backdrop-filter: blur(4px)` so cards remain readable against the grass background.
 - Changed desktop `body` fallback colour from `#f0e8d8` to `#3a6b35` to match the green background while the image loads.
-
-## [Unreleased] — 2026-03-03
 
 ### PWA Setup
 - Installed `vite-plugin-pwa` as a dev dependency to enable Progressive Web App support.

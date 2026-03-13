@@ -21,29 +21,38 @@ const INITIAL_DELAY_MS = 200
 const HOP_DURATION_MS  = 320
 const STEP_DELAY_MS    = 360
 
-/* ─── Oval / horseshoe space coordinates ───────────────────────────────────
- *  Each entry: { x, y } as percentage of the container (0 = top/left edge).
- *  The horseshoe runs CCW: #1 (bottom-right start) → up the right leg →
- *  top arc → down the left leg → #16 (bottom-left, near finish).
- *  Adjust these values once stone-tile PNG assets arrive.
+/* ─── S-curve / snake space coordinates ────────────────────────────────────
+ *  Path layout (reading left→right in the image):
+ *
+ *   Seg A  #1→#5   top row,    left → right   (y ≈ 8–16%)
+ *   Seg B  #6→#7   right side, going down      (x ≈ 80%)
+ *   Seg C  #8→#12  middle row, right → left    (y ≈ 52–60%)
+ *   Seg D  #13→#14 left side,  going down      (x ≈ 14%)
+ *   Seg E  #15→#16 bottom row, left → right    (y ≈ 84–92%)
+ *
+ *  x, y are percentages of the container.  Adjust once stone-tile PNGs arrive.
  * ─────────────────────────────────────────────────────────────────────────── */
 const SPACE_COORDS = {
-   1: { x: 88, y: 80 },
-   2: { x: 87, y: 60 },
-   3: { x: 83, y: 40 },
-   4: { x: 74, y: 22 },
-   5: { x: 62, y: 12 },
-   6: { x: 50, y:  9 },
-   7: { x: 38, y: 12 },
-   8: { x: 26, y: 22 },
-   9: { x: 17, y: 40 },
-  10: { x: 13, y: 60 },
-  11: { x: 12, y: 80 },
-  12: { x: 18, y: 89 },
-  13: { x: 31, y: 91 },
-  14: { x: 46, y: 91 },
-  15: { x: 61, y: 91 },
-  16: { x: 74, y: 89 },
+   3: { x: 12, y: 8 },
+   4: { x: 29, y: 8 },
+   5: { x: 46, y: 8 },
+   6: { x: 63, y: 8 },
+
+   2: { x: 12, y: 24 },
+   1: { x: 29, y: 24 },
+   7: { x: 63, y: 24 },
+
+  12: { x: 12, y: 46 },
+  11: { x: 29, y: 46 },
+  10: { x: 46, y: 46 },
+   9: { x: 63, y: 46 },
+   8: { x: 80, y: 46 },
+
+  13: { x: 12, y: 63 },
+
+  14: { x: 12, y: 80 },
+  15: { x: 29, y: 80 },
+  16: { x: 46, y: 80 },
 }
 
 export function Board({ onSpectatorSpaceSelect, selectedSpace, spectatorSide, onSideChange, onPlace }) {
@@ -258,7 +267,16 @@ export function Board({ onSpectatorSpaceSelect, selectedSpace, spectatorSide, on
             const isCrazy = s.id === 'black' || s.id === 'white'
             // Colored snails face right on row 1 (1–8), flip on row 2 (9–16)
             // Crazy snails face left on row 1 (1–8), don't flip on row 2
-            const shouldMirror = isCrazy ? space.spaceNumber <= 8 : space.spaceNumber >= 9
+            // Mirror rule for S-curve path:
+            //   Seg A (#1-5)  L→R  : face right (no mirror)
+            //   Seg B (#6-7)  down :   face right (no mirror)
+            //   Seg C (#8-12) R→L  :   face left  (mirror)
+            //   Seg D (#13-14) down:   face left  (mirror)
+            //   Seg E (#15-16) L→R :   face right (no mirror)
+            // Crazy snails travel in reverse so their mirror rule flips.
+            const n = space.spaceNumber
+            const facingRight = n <= 7 || n >= 15   // Segs A, B, E
+            const shouldMirror = isCrazy ? facingRight : !facingRight
 
             // Determine animation class — hop vs spectator-bounce
             const isHopping         = s._animating && s._hopKey > 0
@@ -310,7 +328,7 @@ export function Board({ onSpectatorSpaceSelect, selectedSpace, spectatorSide, on
      *  Each space tile is centred on its SPACE_COORDS percentage coordinate.
      *  A bgSrc prop can be added here later to show a stone-track background.
      * ────────────────────────────────────────────────────────────────────── */
-    <div style={{ position: 'relative', width: '100%', paddingTop: '65%' }}>
+    <div style={{ position: 'relative', width: '100%', paddingTop: '105%' }}>
       <div style={{ position: 'absolute', inset: 0 }}>
         {displayTrack.map(space => {
           const coord = SPACE_COORDS[space.spaceNumber]
