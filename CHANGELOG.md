@@ -6,7 +6,15 @@ When no version tag exists yet, changes are listed under **Unreleased**.
 
 ---
 
-## [Unreleased] — 2026-03-04
+## [Unreleased] — 2026-03-13
+
+## [0.7.0] — 2026-03-13
+
+### PWA Setup
+- Installed `vite-plugin-pwa` as a dev dependency to enable Progressive Web App support.
+- Created `vite.config.js` with `VitePWA` plugin configured: `registerType: 'autoUpdate'`, full web manifest (name, short_name, description, theme_color `#b98a49`, background_color `#fff8ee`, display `standalone`, start_url `/`), and icon entries for 192×192 and 512×512 PNGs under `/icons/`.
+- Updated `index.html` `<head>` with Apple PWA meta tags (`apple-mobile-web-app-capable`, `apple-mobile-web-app-status-bar-style`, `apple-mobile-web-app-title`, `apple-touch-icon`) and `theme-color` meta tag for Android/Chrome.
+- Created `vercel.json` with cache-control headers (`public, max-age=0, must-revalidate`) for `sw.js` and Workbox chunks to ensure the service worker is never stale-cached on Vercel.
 
 ### UI / DiceTower
 - Replaced text labels (e.g. "G3", "B2") on rolled dice with proper pip dot layouts matching a real physical die (values 1–6 rendered on a 3×3 grid).
@@ -18,17 +26,14 @@ When no version tag exists yet, changes are listed under **Unreleased**.
 - Updated `.game-card` on desktop to use `rgba(255,248,238,0.93)` with `backdrop-filter: blur(4px)` so cards remain readable against the grass background.
 - Changed desktop `body` fallback colour from `#f0e8d8` to `#3a6b35` to match the green background while the image loads.
 
-## [Unreleased] — 2026-03-03
-
-### PWA Setup
-- Installed `vite-plugin-pwa` as a dev dependency to enable Progressive Web App support.
-- Created `vite.config.js` with `VitePWA` plugin configured: `registerType: 'autoUpdate'`, full web manifest (name, short_name, description, theme_color `#b98a49`, background_color `#fff8ee`, display `standalone`, start_url `/`), and icon entries for 192×192 and 512×512 PNGs under `/icons/`.
-- Updated `index.html` `<head>` with Apple PWA meta tags (`apple-mobile-web-app-capable`, `apple-mobile-web-app-status-bar-style`, `apple-mobile-web-app-title`, `apple-touch-icon`) and `theme-color` meta tag for Android/Chrome.
-- Created `vercel.json` with cache-control headers (`public, max-age=0, must-revalidate`) for `sw.js` and Workbox chunks to ensure the service worker is never stale-cached on Vercel.
-
 ### UI / Lobby
 - Fixed desktop lobby rendering: removed the standalone `if (state.phase === 'setup')` guard that wrapped `<Lobby />` in a bare flex container with no intrinsic width (causing the panel's `width: 100%` to collapse to 0 and leaving only the tiny Game Manual button visible). Reverted to the original `state.phase === 'setup'` ternary inside `app-root`, which provides a proper parent width for the panel.
 - Fixed stale `{false ? <Lobby /> : (...)}` left over from a previous edit; restored `state.phase === 'setup'` as the ternary condition.
+- Replaced Game Manual text button with an image button using a snail character illustration (`/icons/game-manual-button.png`).
+
+### UI / PlayerCard
+- Replaced coloured span badges for displayed leg bets with actual coin images (`/colored_coins/{color}-coin-{value}.png`), providing a visual match to the betting system.
+- Leg bet tiles now display as 48×48 px coin images with subtle drop-shadow, improving visual harmony with the betting panel.
 
 ---
 

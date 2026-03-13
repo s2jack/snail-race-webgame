@@ -194,19 +194,15 @@ export function PlayerCard({ mobileMode = false }) {
         <div style={{ ...sec }}>
           <div style={secTitle}>Leg Bets</div>
           {(currentPlayer.legBetTiles || []).length > 0 ? (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               {(currentPlayer.legBetTiles || []).map((bet, idx) => (
-                <span key={idx} style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 5,
-                  padding: '5px 10px', borderRadius: 20,
-                  background: colorDot(bet.color),
-                  color: whiteText(bet.color) ? '#fff' : '#333',
-                  fontSize: 12, fontWeight: 700,
-                  border: '2px solid rgba(0,0,0,0.15)',
-                  boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
-                }}>
-                  {bet.color} <span style={{ opacity: 0.85 }}>({bet.value} coins)</span>
-                </span>
+                <img
+                  key={idx}
+                  src={`/colored_coins/${bet.color}-coin-${bet.value}.png`}
+                  alt={`${bet.color} ${bet.value} coin`}
+                  title={`${bet.color} — ${bet.value} coins`}
+                  style={{ width: 48, height: 48, objectFit: 'contain', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.25))' }}
+                />
               ))}
             </div>
           ) : (
@@ -306,19 +302,15 @@ export function PlayerCard({ mobileMode = false }) {
           <div style={sec}>
             <div style={secTitle}>Leg Bets</div>
             {(currentPlayer.legBetTiles || []).length > 0 ? (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                 {(currentPlayer.legBetTiles || []).map((bet, idx) => (
-                  <span key={idx} style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 5,
-                    padding: '5px 10px', borderRadius: 20,
-                    background: colorDot(bet.color),
-                    color: whiteText(bet.color) ? '#fff' : '#333',
-                    fontSize: 12, fontWeight: 700,
-                    border: '2px solid rgba(0,0,0,0.15)',
-                    boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
-                  }}>
-                    {bet.color} <span style={{ opacity: 0.85 }}>({bet.value} coins)</span>
-                  </span>
+                  <img
+                    key={idx}
+                    src={`/colored_coins/${bet.color}-coin-${bet.value}.png`}
+                    alt={`${bet.color} ${bet.value} coin`}
+                    title={`${bet.color} — ${bet.value} coins`}
+                    style={{ width: 48, height: 48, objectFit: 'contain', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.25))' }}
+                  />
                 ))}
               </div>
             ) : (
