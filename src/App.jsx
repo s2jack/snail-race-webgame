@@ -210,7 +210,7 @@ export default function App() {
   // ── Desktop layout ───────────────────────────────────────────────────
   return (
     <div className="app-root">
-      <h1 className="app-title">🐌 Snail Race</h1>
+      <h1 className="app-title"></h1>
       {state.phase === 'setup' ? (
         <Lobby />
       ) : (

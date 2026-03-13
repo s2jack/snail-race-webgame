@@ -291,7 +291,7 @@ export function Lobby() {
 
       </div>{/* /panel */}
 
-      {/* ── Game Manual fixed button — top-right of viewport ── */}
+      {/* ── Game Manual image button — top-right of viewport ── */}
       <button
         onClick={() => setShowManual(true)}
         style={{
@@ -301,21 +301,31 @@ export function Lobby() {
           zIndex: 500,
           display: 'flex',
           alignItems: 'center',
-          gap: 7,
-          padding: '9px 16px',
-          fontSize: 13,
-          fontWeight: 800,
-          letterSpacing: '0.3px',
-          background: `linear-gradient(135deg, #c9aa7a, #b08a55, #7a5a2a)`,
-          color: '#fff8ee',
-          border: '2px solid #5a3e1b',
-          borderRadius: 10,
+          justifyContent: 'center',
+          padding: 0,
+          background: 'transparent',
+          border: 'none',
           cursor: 'pointer',
-          fontFamily: 'inherit',
-          boxShadow: '0 4px 14px rgba(0,0,0,0.35)',
+          width: 120,
+          height: 120,
+          borderRadius: 8,
+          transition: 'transform 0.2s ease, filter 0.2s ease',
         }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'scale(1.05)'
+          e.currentTarget.style.filter = 'brightness(1.1)'
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'scale(1)'
+          e.currentTarget.style.filter = 'brightness(1)'
+        }}
+        title="Open Game Manual"
       >
-        📖 <span>Game Manual</span>
+        <img
+          src="/lobby/gamemanual-button.png"
+          alt="Game Manual"
+          style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+        />
       </button>
 
       {showManual && <GameManual onClose={() => setShowManual(false)} />}
